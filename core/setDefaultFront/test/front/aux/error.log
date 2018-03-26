@@ -1,0 +1,40 @@
+<div><errorentry>
+	<strong><datetime>2018-03-21 09:45:57 (-03)</datetime></strong>
+	<errornum>2</errornum>
+	<errortype>Warning</errortype>
+	<samp><errormsg>mysqli::query(): Couldn't fetch mysqli</errormsg></samp>
+	<scriptname>/home/leandro/www/leal/core/Conectar.php</scriptname>
+	<scriptlinenum>23</scriptlinenum>
+	<ul visible="hidden" style="display:none" >
+	\ŧ<li>#0  MiControlError::gestorErrores(2, mysqli::query(): Couldn't fetch mysqli, /home/leandro/www/leal/core/Conectar.php, 23, Array ([con] => mysqli Object ([affected_rows] => ,[client_info] => ,[client_version] => ,[connect_errno] => ,[connect_error] => ,[errno] => ,[error] => ,[error_list] => ,[field_count] => ,[host_info] => ,[info] => ,[insert_id] => ,[server_info] => ,[server_version] => ,[stat] => ,[sqlstate] => ,[protocol_version] => ,[thread_id] => ,[warning_count] => )))</li>
+		<li>#1  mysqli->query(SET NAMES 'utf8') called at [/home/leandro/www/leal/core/Conectar.php:23]</li>
+		<li>#2  Conectar->conexion() called at [/home/leandro/www/leal/core/EntidadBase.php:17]</li>
+		<li>#3  EntidadBase->__construct(usuarios) called at [/home/leandro/www/leal/test/front/model/usuarios.php:25]</li>
+		<li>#4  Usuarios->__construct() called at [/home/leandro/www/leal/test/front/controller/IndexController.php:11]</li>
+		<li>#5  indexController->index() called at [/home/leandro/www/leal/core/ControladorFrontal.func.php:57]</li>
+		<li>#6  cargarAccion(indexController Object (), index) called at [/home/leandro/www/leal/core/ControladorFrontal.func.php:68]</li>
+		<li>#7  lanzarAccion(indexController Object (), index) called at [/home/leandro/www/leal/index.php:28]</li>
+		<li></li>
+</ul>
+</errorentry></div>
+
+<div><errorentry>
+	<strong><datetime>2018-03-21 09:45:57 (-03)</datetime></strong>
+	<errornum>2</errornum>
+	<errortype>Warning</errortype>
+	<samp><errormsg>mysqli::__construct(): (HY000/1045): Access denied for user 'u302896513_idv'@'localhost' (using password: YES)</errormsg></samp>
+	<scriptname>/home/leandro/www/leal/core/Conectar.php</scriptname>
+	<scriptlinenum>22</scriptlinenum>
+	<ul visible="hidden" style="display:none" >
+	\ŧ<li>#0  MiControlError::gestorErrores(2, mysqli::__construct(): (HY000/1045): Access denied for user 'u302896513_idv'@'localhost' (using password: YES), /home/leandro/www/leal/core/Conectar.php, 22, Array ())</li>
+		<li>#1  mysqli->__construct(localhost, u302896513_idv, vQCrbS2u5Rjc!, u302896513_iduv) called at [/home/leandro/www/leal/core/Conectar.php:22]</li>
+		<li>#2  Conectar->conexion() called at [/home/leandro/www/leal/core/EntidadBase.php:17]</li>
+		<li>#3  EntidadBase->__construct(usuarios) called at [/home/leandro/www/leal/test/front/model/usuarios.php:25]</li>
+		<li>#4  Usuarios->__construct() called at [/home/leandro/www/leal/test/front/controller/IndexController.php:11]</li>
+		<li>#5  indexController->index() called at [/home/leandro/www/leal/core/ControladorFrontal.func.php:57]</li>
+		<li>#6  cargarAccion(indexController Object (), index) called at [/home/leandro/www/leal/core/ControladorFrontal.func.php:68]</li>
+		<li>#7  lanzarAccion(indexController Object (), index) called at [/home/leandro/www/leal/index.php:28]</li>
+		<li></li>
+</ul>
+</errorentry></div>
+
