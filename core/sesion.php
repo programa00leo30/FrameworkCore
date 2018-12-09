@@ -3,7 +3,7 @@ class sesion {
 	const SESSION_STARTED = TRUE;
     const SESSION_NOT_STARTED = FALSE;
    
-    private $sessionState = self::SESSION_NOT_STARTED;
+    private static $sessionState = self::SESSION_NOT_STARTED;
    
     private static $instance;
    

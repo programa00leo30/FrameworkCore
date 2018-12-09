@@ -7,8 +7,11 @@
 
 class htmlinput {
 
-
+	private $javascript;
 	private $imageKeys = array();
+	public function __construct(){
+		$this->javascript="";
+	}
 	
 	private function getElementHtml($tag, $attributes, $content = false) {
 		$code = '<' . $tag;
@@ -139,6 +142,36 @@ class htmlinput {
 			. '" data-output="' . $output . '"' . ($escaped ? ' data-escaped="true"' : '') . ' />';
 		return $code;
 	}
+	public function editor($contenido,$id="summernote" ,$extras =""){
+		// WYSIWYG
+		$text="<textarea id=\"$id\" $extras >$contenido</textarea>";
+		/*$this->javascript .= "$(document).ready(function() {
+		$this->javascript .= "$(document).YellowText(function() {
+    $('#$id').$id({
+  height:200,
+  minHeight: null,
+  maxHeight: null,
+  toolbar: [
+     ['toolbar', ['bold', 'italic', 'underline','fontsize','color','ul', 'ol', 'paragraph' , 'source']]
+  ]				
+});
+});" ;
+*/
+		$this->javascript .= "\n$(\"#$id\").YellowText();\n" ;
+		return $text;
+	}
+	public function javascript($texto,$archivo=""){
+		if ($archivo!=""){
+			/* <script src="<?php echo $helper->url("js","yellow-text.js" ) ?>" ></script> */
+			$texto="<script src=\"".$archivo."\" >$texto</script>";
+		}else{
+			$texto="<script>$texto</script>";
+		}
+		$this->javascript .=$texto;
+	}
+	public function javascript_Render(){
 
-
+		return $this->javascript;
+		
+	}
 }

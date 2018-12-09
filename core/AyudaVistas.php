@@ -4,15 +4,81 @@ use Dompdf\Dompdf ;
 
 class AyudaVistas{
     private $pdf;
+    public $iframe;
     
-    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO){
-        $urlString=URL."index.php/".$controlador."/".$accion;
-        // echo "url:".$urlString."<<<" ;
+    public function __construct(){
+		$this->iframe = false;
+		
+	}
+	public function incluir($archivo,$carpeta){
+		global $modelo,$paginaGlobal;
+		// echo "PaginaBase:archivo:$archivo actuador:$actuador<br>\n";
+		$modelo->setAccion($carpeta);
+		// $file=$this->modelo->runing($this->pagina["archivo"]);
+		$file=$modelo->runing($archivo);
+		echo array("<!--helper-->","<!-- helper df -->","<!-- helper 404 $archivo -->")[$modelo->falla()];
+		if ($modelo->falla() < 3)
+			require_once($file);
+		else
+			echo "\n<div></div>\n"; // no se incluye nada.
+		// return $archivo->
+	}
+	
+    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$ifram=false){
+		// hay que agregar el scrip del que provino la peticion.
+		//phpinfo();
+		$archivo=basename($_SERVER['SCRIPT_NAME']);
+		$iframe = $ifram or $this->iframe;
+		$url = URL.$archivo;
+		$url = rtrim($url,"/");
+		//echo $url;
+		// la url debe contener el archivo destino: index.php , 
+        if ( $iframe ){	
+			$urlString=$url."/".$controlador."/iframe/".$accion;
+		}else{
+			$urlString=$url."/".$controlador."/".$accion;
+		}
         return $urlString;
     }
 
+	public function paginador($coneccion,$controlador,$acion,$paginaActual,$CantidadRegPorPagina){
+		// esta funcion devuelve un paginador de inicio y por salto
+		$contador = $coneccion->contar()/ $CantidadRegPorPagina;
+		// var_dump($contador);
+		// $nPagina = 
+		$pag="<div class=\"col-md-12 center\" >\n";
+		if ($paginaActual > 0){
+		$pag=$pag."<a href=\"".$this->url($controlador,$acion."?pag=first") 
+			."\" class=\"paginainicio\" ><<<-</a>"
+			."<a href=\"".$this->url($controlador,$acion."?pag=preview") 
+			."\" class=\"paginainicio\" ><-</a>";
+		}
+		for ( $cont=0;$cont< ( $contador  ); $cont++ ){
+			$pag="$pag
+					<a href=\""
+				.$this->url($controlador,$acion."?pag=$cont") 
+				."\" class=\"paginanumero\" >$cont</a>";
+		}
 		
+		if ( $paginaActual  < ($contador * $CantidadRegPorPagina)-($CantidadRegPorPagina/2) ){
+		$pag="$pag<a href=\"".$this->url($controlador,$acion."?pag=next") 
+			."\" class=\"paginaultima\" >-></a>\n"
+			."<a href=\"".$this->url($controlador,$acion."?pag=last") 
+			."\" class=\"paginaultima\" >->>></a></div>\n";
+		}
+		return $pag;
+	}
+	// funcion que busca un valor en un arreglo.
+	public function check($valor,$arreglo,$Afirmativo="",$Negativo=""){
+		// var_dump($valor);
+		// var_dump($arreglo);
 		
+		if ( in_array($valor,$arreglo)){
+			return $Afirmativo ;
+		}else{
+			return $Negativo ;
+		}
+	}
     //Helpers para las vistas
     public function pdfconstruct(){
 		
@@ -104,7 +170,6 @@ class AyudaVistas{
 			$contenido= ob_get_contents() ;
 		ob_end_clean();
 		return $contenido;
-		
 		
 	}
 }

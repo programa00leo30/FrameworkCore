@@ -1,83 +1,80 @@
 <?php
-// parte sesion del sistema. activar entorno global
-// require_once 'error.php';
-require_once 'sesion.php';
-require_once 'objeto.php';
 
 // start_sesion();
 
 //FUNCIONES PARA EL CONTROLADOR FRONTAL
- 
-function cargarControlador($controller){
-	global $_SESSION,$ob_sesion,$error_handle;
-	
-	//$ob_sesion = new sesion();
-	// obtengo el inicio de sesion.
-	$ob_sesion = sesion::getInstance();
 
-// 	if (isset($ob_sesion->registrado)){
-//		return cargarControladorSeguro($controller);
-//	}else
-	{
-		// login.
-		// por defecto. verificar sesion.
-		
-		$controlador=ucwords(CONTROLADOR_DEFECTO).'Controller';
-		$strFileController=PATH.'/controller/'.ucwords(CONTROLADOR_DEFECTO).'Controller.php';  
-		
-		//if ( file_exists( PATH.'/controller/'.ucwords($controller).'Controller.php' ))
-		{	
-			$controlador=ucwords($controller).'Controller';
-			$strFileController=PATH.'/controller/'.ucwords($controller).'Controller.php' ;
-		}
-		
-		// falla al adquirir controlador.
-		if ( file_exists( $strFileController ) ) {
-			require_once $strFileController;
-		} else {
-			// no esta el controlador tomo controlador por defecto.
+function cargarControladorSeguro($controller){
+
+	global $_SESSION,$ob_sesion,$error_handle,$modelo ;
+
+		$controlador=ucwords($controller).'Controller';
+		$modelo->setAccion("controller");
+		$strFileController=$modelo->runing( ucwords(CONTROLADOR_DEFECTO).'Controller.php');
+
+		$rt=require_once($modelo->runing( ucwords($controller).'Controller.php' ));
+		if (!$rt){
+			// no existe el controlador, cargando el que es por defecto.
+			$strFileController=ucwords(CONTROLADOR_DEFECTO).'Controller.php';
+			$rt=require_once($modelo->runing( ucwords(CONTROLADOR_DEFECTO).'Controller.php' ));
 			$controlador=ucwords(CONTROLADOR_DEFECTO).'Controller';
-			$strFileController=PATH.'/controller/'.ucwords(CONTROLADOR_DEFECTO).'Controller.php'; 
-			require_once $strFileController;
+
 		}
-		
-		$controllerObj=new $controlador();
-		// $_SESSION = $controllerObj->sesion();
-		
+		if (class_exists ( $controlador )){ // la clase existe.
+			$controllerObj=new $controlador();
+		}else{ // la clase no existe. cargando controlador por defecto.
+			$controlador = (ucwords(CONTROLADOR_DEFECTO).'Controller');
+			$controllerObj=new $controlador();
+		}
+
 		return $controllerObj;
+	}
+function cargarControlador($controller){
+	global $_SESSION,$ob_sesion,$error_handle,$modelo;
+
+	if ( defined( "LOGIN") ){
+		// en caso de que se necesite login.
+		if ( ! isset( $ob_sesion->login_usuario_activo )){
+			// $controlador=ucwords( LOGIN_controler .'Controller.php');
+			return cargarControladorSeguro(LOGIN_controler) ;
+		}
+		else
+		{
+			// cargar controlador despues de que se logeo
+			return cargarControladorSeguro($controller) ;
+		}
+	}
+	else
+	{
+		// cargar controlador sin logeo.
+		return cargarControladorSeguro($controller) ;
 	}
 }
 
 
-function cargarAccion($controllerObj,$action){
-    global $_SESION,$ob_sesion ;
+
+function cargarAccion($controllerObj,$action,$activacion=null){
+    global $_SESION,$ob_sesion,$modelo ;
     // echo "accion: $action";
     $accion=$action;
-    
-    $controllerObj->$accion();
-    
+	 // ob_start();
+		$controllerObj->$accion($activacion);
+		// $content = ob_get_contents();
+	 //ob_end_clean();
+	ChromePhp::render();
+	echo $content;
 }
- 
-function lanzarAccion($controllerObj,$ac){
+
+function lanzarAccion($controllerObj,$ac,$activacion=null){
 	global $_SESION,$ob_sesion ;
-	
-	
+
+
 	if ($controllerObj == "") {
 		cargarAccion($controllerObj, ACCION_DEFECTO);
 	}else{
-		cargarAccion($controllerObj, $ac);
+		cargarAccion($controllerObj, $ac,$activacion);
 	}
-/*		
-	if (isset($_SESSION["fin"])){
-		
-		cargarAccion($controllerObj, ACCION_DEFECTO);	
-	
-	}elseif (isset($_GET["d"]) && method_exists($controllerObj, $_GET["d"])){
-        cargarAccion($controllerObj, $_GET["d"]);
-    }else{
-        cargarAccion($controllerObj, ACCION_DEFECTO);
-    }
-*/
+
 }
 
 
@@ -85,7 +82,7 @@ function mensaje($mensaje,$render=false){
 	global $_SESSION;
 	static $msn="";
 	static $coun=0;
-	
+
 	if (($coun==0) and isset($_SESSION["mensajes"])){
 		$msn = $_SESSION["mensajes"];
 	}
@@ -99,8 +96,8 @@ function mensaje($mensaje,$render=false){
 		}
 	}
 	$_SESSION["mensajes"] = $msn;
-	$coun++;	
-	
+	$coun++;
+
 }
 function accesso(){
 	global $_SESSION;
@@ -116,28 +113,27 @@ function accesso(){
 		$nl=99;
 	}
 	return $nl;
-	
+
 }
 function debugf($mensaje,$render=0){ // falso.
-	
+
 	static $msn="";
 	static $con=0;
-	if ($render == true) $render =1;
+	// if ($render == true) $render =1;
 	/*
 	$llamado = debug_backtrace();
 		// var_dump($llamado);
 		echo "llamado desde:".$llamado[0]["line"].": clase:".$llamado[0]["class"]."<br>\n";
-		
+
 	*/
 	if ($render == 2){
 		// modo especial
 		if ($con > 0 )
-			$t = "(".$con.")".$msn ;
+			$t = "(".$con.")".$msn."<br>\n" ;
 		else
 			$t = false;
-		
 		return $t;
-	}else{	
+	}else{
 		$msn.="\t\t<div >($con)".$mensaje."</div>\n";
 		$con ++ ;
 		if (($render <> 0) and debugmode){
@@ -162,39 +158,3 @@ function vardump($variable){
 	debugf("var_dump::".$sal);
 }
 
-function debugmode($tipo=""){
-	
-	if ($tipo == "not"){
-		return true;
-		// return !debugmode ;
-	}else{
-		return debugmode ;
-	}
-
-}
-
-/**
-* Simple autoloader, so we don't need Composer just for this.
-*/
-class Autoloader
-{
-    public static function register()
-    {
-		
-        spl_autoload_register(function ($class) {
-			
-			
-			// $controlador=ucwords($class).'Controller';
-			$strFileController=PATH.'/controller/'.ucwords($class).'.php';
-		    // $file = str_replace('\\', DIRECTORY_SEPARATOR, $class).'.php';
-            
-            if (file_exists($strFileController)) {
-                require_once $strFileController;
-                return true;
-            }
-            return false;
-        });
-    }
-}
-
-Autoloader::register();

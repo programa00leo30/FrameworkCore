@@ -1,9 +1,13 @@
 <?php
-class ModeloBase extends EntidadBase{
+// class ModeloBase extends EntidadBase{
+class ModeloBase extends ExtensionPuente{
     protected $table;
     private $fluent;
      
     public function __construct($table) {
+		parent::addExt(new EntidadBase());
+		parent::addExt(new EntidadBaseFormularios());
+		
         $this->table=(string) $table;
         parent::__construct($table);
          
