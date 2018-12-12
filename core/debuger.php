@@ -170,6 +170,17 @@ class ChromePhp
      * @param mixed $data,... unlimited OPTIONAL number of additional logs [...]
      * @return void
      */
+    public static function Debugerlog()
+    {
+        $args = func_get_args();
+        return self::_log('DEBUGGER:', $args,true);
+    }
+    /**
+     * logs a variable to the console
+     *
+     * @param mixed $data,... unlimited OPTIONAL number of additional logs [...]
+     * @return void
+     */
     public static function log()
     {
         $args = func_get_args();
@@ -254,7 +265,7 @@ class ChromePhp
      * @param string $type
      * @return void
      */
-    protected static function _log($type, array $args)
+    protected static function _log($type, array $args ,$debuger=false)
     {
         // nothing passed in, don't do anything
         if (count($args) == 0 && $type != self::GROUP_END) {
@@ -267,6 +278,8 @@ class ChromePhp
             $logs[] = $logger->_convert($arg);
         }
         $backtrace = debug_backtrace(false);
+        if ($debuger) array_pop($backtrace);
+        
         $level = $logger->getSetting(self::BACKTRACE_LEVEL);
         $backtrace_message = 'unknown';
         if (isset($backtrace[$level]['file']) && isset($backtrace[$level]['line'])) {
@@ -513,6 +526,8 @@ class Debuger
 			$mensaje=$args[1];
 			self::$_mostrarlogTEXTO .= "\n<!--linea:$line archivo:$file :: <br>\n $tipo :: $mensaje -->\n";
 		}
+		$args[0]= "debug_log:".$args[0]; 
+		ChromePhp::Debugerlog($args[0],$args[1]);
 	
 	}
 	public static function msg(){

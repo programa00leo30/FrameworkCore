@@ -3,6 +3,7 @@
 class ControladorBase{
 	private $plantilla;
 	private $enventana = false ;
+	private $ajax = false ;
 	protected $modelo;
 	public static $sesion ;
 
@@ -73,10 +74,19 @@ class ControladorBase{
 			return $ob_sesion->get($value);
 		}
 	}
+	
 	public function iframe($acion){
 		// modalidad de iframe para el html generado
 		// url/controlador/modalidad/acion.
-		$this->enventana=true;
+		// $this->enventana=true;
+		$this->plantilla="";
+		// var_dump($acion);
+		$this->{$acion[3]}();
+	}
+	public function ajax($acion){
+		// modalidad de iframe para el html generado
+		// url/controlador/modalidad/acion.
+		$this->plantilla="ajax";
 		// var_dump($acion);
 		$this->{$acion[3]}();
 	}
@@ -133,6 +143,19 @@ class ControladorBase{
 * vistas y carga la vista que le llega como parámetro. En resumen un método para
 * renderizar vistas.
 */
+
+	public function ajaxView($vista,$datos){
+		$this->_view($vista,$datos,"ajax");
+	}
+	private function _view($vista,$datos,$plantilla){
+		$pagina = new paginaBase($plantilla,$vista,$datos);
+		return $pagina->render();
+	}
+	public function view($vista,$datos,$plantillaTrue=true){
+		$plantilla = array( "" , $this->plantilla )[$plantillaTrue ];
+		$this->_view($vista,$datos,$plantilla);
+	}
+	/*
     public function view($vista,$datos,$usarPlantilla=TRUE){
 		global $paginaGlobal,$modelo;
 
@@ -206,7 +229,7 @@ class ControladorBase{
 		}
 
     }
-
+	*/
     public function plantilla($plantilla){
 		$this->plantilla = $plantilla;
 		// require_once PATH.'/plantilla/'.$vista.'Plantilla.php';

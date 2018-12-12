@@ -20,6 +20,7 @@ function ControlCierre() {
 			$errstr  = $error["message"];
 			MiControlError::errorHandler( $errno, $errstr, $errfile, $errline);
 			echo MiControlError::mostrar();
+			ChromePhp::log("cierre_ERROR:", "error:$errno, $errstr, $errfile, $errline" );
 			echo "error:$errno, $errstr, $errfile, $errline";
 			Debuger::render(); 	
 		}else{
@@ -164,12 +165,13 @@ FUNC;
 					);
 		// conjunto de errores por el cuál se guardará un seguimiento de una variable
 		$errores_usuario = array(E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE);
+		/*
 		// obteniendo el rastreo.
 		ob_start();
 			debug_print_backtrace();
 			$trace = ob_get_contents();
         ob_end_clean();
-
+		
         // Remove first item from backtrace as it's this function which
         // is redundant.
         $trace = preg_replace ('/^#0\s+' . __FUNCTION__ . "[^\n]*\n/", '', $trace, 1);
@@ -182,9 +184,16 @@ FUNC;
         $rastreo = explode("\n",$trace);
         // quitar posibles caracteres de error:
         foreach($rastreo as $k=>$v) $rastreo[$k] = htmlentities(utf8_encode($v));
-
+		*/
+		$rastreo = debug_backtrace(6);
+		
         $_contador= ( self::$_contador ++ );
-
+		$rast="";
+		foreach($rastreo as $k=>$v){
+			$rast .= "</li>". implode(", ",self::_convertir($v)) ."<li>\n";
+			// var_dump(self::_convertir($v));
+			$rastreo[$k] = implode(", ",self::_convertir($v));
+		}
 		$err = "<div><errorentry>";
 		$err .= "\t<strong><datetime>" . $fh . "</datetime></strong>";
 		$err .= "\t<errornum>" . $númerr . "</errornum>";
@@ -194,7 +203,8 @@ FUNC;
 		$err .= "\t<scriptlinenum>" . $númlínea . "</scriptlinenum>";
 		$err .= "\t<a href=\"#\" onClick=\"ver_error(%27" . $_contador . "%27);\" >#</a>";
 		$err .= "\t<ul visible=\"hidden\" style=\"display:none\" id=\"error_".$_contador."\"><li>".
-			implode("</li><li>",$rastreo)."</li></ul>";
+			// implode("</li><li>",$rastreo)
+			$rast ."</li></ul>";
 		$rastr="";
 		// var_dump($rastreo);
 		foreach($rastreo as $v) {
@@ -244,8 +254,51 @@ FUNC;
 	public function __toString(){
 		return $this->salida();
 	}
-
-
+	
+	private static function _convertir($object)
+    {
+        // if this isn't an object then just return it
+        if (!is_object($object)) {
+            return $object;
+        }
+        //Mark this object as processed so we don't convert it twice and it
+        //Also avoid recursion when objects refer to each other
+        $object_as_array = array();
+        // first add the class name
+        $object_as_array['___class_name'] = get_class($object);
+        // loop through object vars
+        $object_vars = get_object_vars($object);
+        foreach ($object_vars as $key => $value) {
+            // same instance as parent object
+            if ($value === $object || in_array($value, $this->_processed, true)) {
+                $value = 'recursion - parent object [' . get_class($value) . ']';
+            }
+            $object_as_array[$key] = $this->_convert($value);
+        }
+        $reflection = new ReflectionClass($object);
+        // loop through the properties and add those
+        foreach ($reflection->getProperties() as $property) {
+            // if one of these properties was already added above then ignore it
+            if (array_key_exists($property->getName(), $object_vars)) {
+                continue;
+            }
+            $type = $this->_getPropertyKey($property);
+            if ($this->_php_version >= 5.3) {
+                $property->setAccessible(true);
+            }
+            try {
+                $value = $property->getValue($object);
+            } catch (ReflectionException $e) {
+                $value = 'only PHP 5.3 can access private/protected properties';
+            }
+            // same instance as parent object
+            if ($value === $object || in_array($value, $this->_processed, true)) {
+                $value = 'recursion - parent object [' . get_class($value) . ']';
+            }
+            $object_as_array[$type] = $this->_convert($value);
+        }
+        return $object_as_array;
+    }
 }
 
 

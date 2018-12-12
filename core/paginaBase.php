@@ -63,7 +63,7 @@ class PaginaBase{
 		$this->modelo->setAccion($actuador);
 		// $file=$this->modelo->runing($this->pagina["archivo"]);
 		$file=$this->modelo->runing($archivo);
-		echo array("","<!-- df -->","<!-- 404 $archivo -->")[$this->modelo->falla()];
+		Debuger::log("tipo", array("","<!-- df -->","<!-- 404 $archivo -->")[$this->modelo->falla()] );
 
 		require_once($file);
 

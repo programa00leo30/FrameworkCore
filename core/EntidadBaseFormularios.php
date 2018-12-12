@@ -48,7 +48,7 @@ class EntidadBaseFormularios{
 		 return <<<JAVAS
 				<div class="well">
 					<div id="$campo" class="input-append date">
-						<input type="text" data-format="MM/dd/yyyy HH:mm:ss PP" class="form-control" name="$campo" $extra value="$valor" >
+						<input type="date" data-format="MM/dd/yyyy HH:mm:ss PP" class="form-control" name="$campo" $extra value="$valor" >
 						<span class="add-on">
 							<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
 						</span>

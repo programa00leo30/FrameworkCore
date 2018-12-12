@@ -81,16 +81,18 @@ class ControlArchivo{
 		if (self::fileexists($t)){
 			// la mejor salida. todo ok.
 			$this->falla=0;
-			return $t;
+			$rt= $t;
 		}elseif (self::fileexists($d)){
 			// falla pero tolerable. esta en default
 			$this->falla=1;
-			return $d;
+			$rt= $d;
 		}else{
 			// falla terrible no esta el archivo.
 			$this->falla=2;
-			return $f;
+			$rt= $f;
 		}
+		ChromePhp::log("control_ARCHIVO:","arch:$archivo rt=$rt");
+		return $rt;
 	}
 	/**
 	* retorna si exitio una falla en la ultima llamada

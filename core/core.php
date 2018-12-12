@@ -49,7 +49,7 @@
 	/* acciones apliadas utlizables para depurar.*/
 	ChromePhp::log('Hola Consola!');
 	ChromePhp::log($_SERVER);
-	ChromePhp::warn('Algo esta mal!!');
+	// ChromePhp::warn('Algo esta mal!!');
 	// */
 
 
@@ -92,8 +92,6 @@ if (isset($_SESSION["login_usuario_activo"])){
 
 $paginaGlobal = new objeto(); // objeto general
 
-
-ChromePhp::log('Hola Consola!');
 
 
 /* ******************************************++
