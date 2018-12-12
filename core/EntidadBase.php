@@ -498,13 +498,14 @@ textoultm
     }
      
     public function deleteById($id){
-		$sql="DELETE FROM ".$this->table." WHERE id='$id' limit 1, 1 ;";
+		$sql="DELETE FROM ".$this->table." WHERE id='$id' LIMIT 1 ;";
 		// echo $sql."\n<br>";
         // ejecutando la consulta.
         $query=$this->db->query($sql); 
         if (!$query){
 			// falla de consulta
-			echo "falla de sistema . ";
+			echo "falla de sistema borrar. ";
+			echo $sql."<br>\n";
 			echo $this->db()->error;
 			exit ;
 		}
@@ -514,7 +515,7 @@ textoultm
     }
      
     public function deleteBy($column,$value){
-        $query=$this->db->query("DELETE FROM $this->table WHERE $column='$value'"); 
+        $query=$this->db->query("DELETE FROM ".$this->table." WHERE `$column`='$value'"); 
         $this->idRecordset=null;
         return $query;
         

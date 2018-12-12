@@ -62,7 +62,7 @@ function cargarAccion($controllerObj,$action,$activacion=null){
 		// $content = ob_get_contents();
 	 //ob_end_clean();
 	ChromePhp::render();
-	echo $content;
+	// echo $content;
 }
 
 function lanzarAccion($controllerObj,$ac,$activacion=null){

@@ -24,11 +24,19 @@ class AyudaVistas{
 		// return $archivo->
 	}
 	
-    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$ifram=false){
+    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$argumentos = array("ifram"=>false) ){
 		// hay que agregar el scrip del que provino la peticion.
 		//phpinfo();
+		
 		$archivo=basename($_SERVER['SCRIPT_NAME']);
-		$iframe = $ifram or $this->iframe;
+		$iframe = (isset($argumentos["ifram"])?$argumentos["ifram"]:false) or $this->iframe;
+		unset($argumentos["ifram"]);
+		
+		$get="?";
+		foreach($argumentos as $k=>$v) $get.="$k=$v&";
+		$get=rtrim($get,"&");
+		if (strlen($get)>2)$accion.=$get;
+		
 		$url = URL.$archivo;
 		$url = rtrim($url,"/");
 		//echo $url;
