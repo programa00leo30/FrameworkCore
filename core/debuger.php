@@ -464,6 +464,19 @@ class ChromePhp
  * @package Debuger
  * @author Leandro Morala <programa00leo30@gmail.com>
  */
+
+class DebugerCore 
+{
+	public static function log(){
+		// $arg=func_get_args();
+		// Debuger::log($arg[0],$arg[1]);
+	}
+	public static function msg(){
+		// Debuger::log(func_get_args());
+	}
+	
+}
+
 class Debuger
 {
 	private static $mostrarlog = true;
@@ -505,6 +518,16 @@ class Debuger
 			
 		}
 	}
+	public static function showdebug(){
+		$rt=false;
+		if (defined("debugmode"))$rt=true;
+		$rt= $rt or self::$mostrarlog ;
+		return $rt;
+	}
+	
+	public static function showlog(){
+		return self::$mostrarlog;
+	}
 	
 	public static function nolog(){
 		self::$mostrarlog =false;
@@ -514,17 +537,17 @@ class Debuger
 		// debug_print_backtrace();
 		$ver=debug_backtrace();
 		foreach ($ver as $k=>$v){
-		 if ($v["file"]==__file__)array_shift($ver);
+		 if (isset($v["file"]) and ($v["file"]==__file__) )array_shift($ver);
 		}
 		$file = $ver[0]["file"];
 		$line = $ver[0]["line"];
 		$args = func_get_args();
 		if (count($args) != 2){
-			self::$_mostrarlogTEXTO .= "<!-- sin argumentos linea:$line archivo:$file-->";
+			self::$_mostrarlogTEXTO .= "<!-- sin argumentos linea:$line archivo:$file -->";
 		}else{
 			$tipo=$args[0];
 			$mensaje=$args[1];
-			self::$_mostrarlogTEXTO .= "\n<!--linea:$line archivo:$file :: <br>\n $tipo :: $mensaje -->\n";
+			self::$_mostrarlogTEXTO .= "<!-- \nlinea:$line archivo:$file\ntipo:$tipo :msg: $mensaje \n-->\n";
 		}
 		$args[0]= "debug_log:".$args[0]; 
 		ChromePhp::Debugerlog($args[0],$args[1]);
@@ -537,7 +560,7 @@ class Debuger
 	}
 	public static function warn(){
 		 $args = func_get_args();
-		self::log("WARN",$args[0]);
+		self::log("WARN",$args[0].$args[1]);
 	}
 }
 

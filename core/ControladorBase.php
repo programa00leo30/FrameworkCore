@@ -25,10 +25,9 @@ class ControladorBase{
         }
         //Incluir todos los modulos auxiliares.
 
-		Debuger::msg("agregando nuevos:");
-		Debuger::msg("en ruta:".$modelo->RutaVista("auxiliar")."*.php");
+		DebugerCore::msg("en ruta:".$modelo->RutaVista("auxiliar")."*.php");
         foreach(glob($modelo->RutaVista("auxiliar")."*.php",GLOB_NOSORT) as $file){
-            Debuger::msg("auxiliar: $file");
+            DebugerCore::msg("auxiliar: $file");
             require_once $file;
         }
         $this->modelo=$modelo;
@@ -148,6 +147,7 @@ class ControladorBase{
 		$this->_view($vista,$datos,"ajax");
 	}
 	private function _view($vista,$datos,$plantilla){
+		
 		$pagina = new paginaBase($plantilla,$vista,$datos);
 		return $pagina->render();
 	}
@@ -155,81 +155,7 @@ class ControladorBase{
 		$plantilla = array( "" , $this->plantilla )[$plantillaTrue ];
 		$this->_view($vista,$datos,$plantilla);
 	}
-	/*
-    public function view($vista,$datos,$usarPlantilla=TRUE){
-		global $paginaGlobal,$modelo;
 
-		if ( $usarPlantilla and !$this->enventana ){
-
-			//require_once PATH.'/view/'.$vista.'View.php';
-			//$pagina = new paginaBase($plantilla, $vista,$datos);
-
-			$pagina = new paginaBase($this->plantilla, $vista,$datos);
-			echo $pagina->render();
-
-		}elseif ( !$this->enventana ) {
-			foreach ($datos as $id_assoc => $valor) {
-				// echo "<div>$id_assoc = </div>";
-				// var_dump($valor);
-				// echo "<br>";
-				//echo "$valor<br>";
-				${$id_assoc}=$valor;
-				// asignacion de variables globales de entorno.
-				$paginaGlobal->$id_assoc=$valor;
-			}
-			// echo "lanzo:$vista";
-
-			// aqui esta la variable auxiliar de todos los views.
-			$helper = new AyudaVistas();
-			$imput = new htmlinput();
-			//$f = new ControlArchivo();
-			//$f->setAccion("view");
-
-			$modelo->setAccion("view");
-			// require_once PATH.'/view/'.$vista.'View.php';
-			require_once $modelo->runing($vista.'View.php');
-		}else{
-			// se debe mostrar solo el contenido.
-			foreach ($datos as $id_assoc => $valor) {
-				// echo "<div>$id_assoc = </div>";
-				// var_dump($valor);
-				// echo "<br>";
-				//echo "$valor<br>";
-				${$id_assoc}=$valor;
-			}
-			// echo "lanzo:$vista";
-
-			// $f = new ControlArchivo();
-			// $f->setAccion("view");
-			// $modelo->setActuado("view");
-			$modelo->setAccion("view");
-			// aqui esta la variable auxiliar de todos los views.
-			$helper = new AyudaVistas();
-			$helper->iframe = true; 		// si es en ventana los links se sostienene.
-			$html = new htmlinput();
-			echo"<!DOCTYPE html>
-	<html lang=\"es_AR\"><head></head><body>";
-			// require_once PATH.'/view/'.$vista.'ViewContenido.php';
-			// require_once PATH.'/view/'.$vista.'ViewContenido.php';
-			require_once $modelo->runing($vista.'ViewContenido.php');
-			echo "<script>";
-			echo "\n". $html->javascript_Render();
-			echo "</script>";
-			if (debugmode){
-				// el signo + viene como un espacio.
-				// echo "<div>".nz($_GET["dg"])."</div>";
-				if(isset($_GET["dg"])){
-					$dg=$_GET["dg"];
-					$msg=base64_decode( str_replace(" ","+",$dg ) );
-					echo "<div class='falla'>$msg</div>";
-				}
-			}
-			echo "</body></html>";
-
-		}
-
-    }
-	*/
     public function plantilla($plantilla){
 		$this->plantilla = $plantilla;
 		// require_once PATH.'/plantilla/'.$vista.'Plantilla.php';
@@ -239,28 +165,23 @@ class ControladorBase{
 		// cambio de modelo
 		$this->redirect($controlador,$metodo,"http:",$model);
 	}
-    public function redirect($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$protocolo='http:',$ruta = URL ){
+    public function redirect($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$arrayArgumentos=array(),$protocolo='http:',$ruta = URL ){
         // todas las acciones terminan redirigiendo la pagina para cargar origen.
         // por axioma salvaguardar mensaje para la proxima
         // if (isset($ob_sesion->msg)) $ob_sesion->msg
-        $dt="";
         $archivo=basename($_SERVER['SCRIPT_NAME']);
         require_once 'AyudaVistas.php';
-        if (debugmode){
-			// si hay error mostrarlo.
-			$datos = debugf("", 2 );
-			if ($datos){
-				$dt = "&dg=".base64_encode($datos);
-				// echo $datos."<<<";
-			}
-		}
+
+        $tx="";
+        foreach($arrayArgumentos as $k=>$v)$tx.="$k=$v&";
+		
 		if ( $this->enventana ) {
 			// redirigir a ventana ( continuar modo iframe.
 			$accion="/iframe/".$accion;
 		}
 		$url=rtrim($ruta,"/");
-        header("Location:".$protocolo.$url."/".$archivo."/".$controlador."/".$accion."?".$dt);
-		echo "enviando... redirigido a ".$url.$archivo."/$controlador/$accion?$dt";
+        header("Location:".$protocolo.$url."/".$archivo."/".$controlador."/".$accion."?".$tx);
+		echo "enviando... redirigido a ".$url.$archivo."/$controlador/$accion?$tx";
 
     }
 

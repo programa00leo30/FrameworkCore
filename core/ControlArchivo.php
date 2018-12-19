@@ -91,7 +91,7 @@ class ControlArchivo{
 			$this->falla=2;
 			$rt= $f;
 		}
-		ChromePhp::log("control_ARCHIVO:","arch:$archivo rt=$rt");
+		DebugerCore::log("control_ARCHIVO:","arch:$archivo rt=$rt");
 		return $rt;
 	}
 	/**

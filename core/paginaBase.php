@@ -19,6 +19,9 @@ class PaginaBase{
 
 		$this->pagina["archivo"] = $pagina."Plantilla.php";
 		$this->pagina["contenido"] = $view."ViewContenido.php";
+		
+		// Debuger::log("pagina:","contenido : ".$view."ViewContendo.php");
+		
 		$this->pagina["ayuda"] = new AyudaVistas();
 		$this->pagina["html"] = new htmlinput();
 		$this->pagina["datos"] = $datos;
@@ -63,29 +66,22 @@ class PaginaBase{
 		$this->modelo->setAccion($actuador);
 		// $file=$this->modelo->runing($this->pagina["archivo"]);
 		$file=$this->modelo->runing($archivo);
-		Debuger::log("tipo", array("","<!-- df -->","<!-- 404 $archivo -->")[$this->modelo->falla()] );
-
-		require_once($file);
-
+		DebugerCore::log("pagina_file::",  
+			( array(".:OK:.",".:DEF:.",".:404($archivo):.")[$this->modelo->falla()] ) 
+			. "$archivo // file:$file" 
+		);
+		ob_start();
+			require_once($file);
+			$page = ob_get_contents();
+		ob_end_clean();
+		echo  $page;
+		
 	}
 	public function render(){
 		// $vista= "index";
-		$this->entrada("plantilla",$this->pagina["archivo"],$this->pagina["datos"]);
+		echo $this->entrada("plantilla",$this->pagina["archivo"],$this->pagina["datos"]);
 		// require_once PATH.'/plantilla/'.$this->pagina["archivo"] ;
-		if (debugmode){
-			// el signo + viene como un espacio.
-			// echo "<div>".nz($_GET["dg"])."</div>";
-			if (isset($_GET["dg"])){
-				$msg=base64_decode( str_replace(" ","+",nz($_GET["dg"],"") ) );
-				echo "<div class='falla'>$msg</div>";
-			}
-		}
 
 	}
-	/*
-	private function modelo(){
-		global $modelo;
-		return $modelo;
-	}
-	*/
+
 }

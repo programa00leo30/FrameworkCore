@@ -10,7 +10,7 @@ function ControlCierre() {
     $errstr  = "shutdown";
     $errno   = E_CORE_ERROR;
     $errline = 0;
-	if (defined("debugmode"))
+	if ( Debuger::showlog() )
 	{
 		$error = error_get_last();
 		if( !is_null($error) ){ // !== NULL) {
@@ -23,10 +23,13 @@ function ControlCierre() {
 			ChromePhp::log("cierre_ERROR:", "error:$errno, $errstr, $errfile, $errline" );
 			echo "error:$errno, $errstr, $errfile, $errline";
 			Debuger::render(); 	
+			echo "<!-- fin con errores.-->";
 		}else{
 			// muestra errores:
 			
-			echo MiControlError::salida() ;
+			Debuger::render(); 	
+			// echo (MiControlError::salida())?MiControlError::salida():"" ;
+			echo "<!-- fin sin errores.-->";
 		}
 	}
 	// cierre de pagina.
@@ -141,6 +144,8 @@ FUNC;
 
 	public static function gestorErrores($númerr, $menserr, $nombrearchivo, $númlínea, $vars)
 	{
+		if ( Debuger::showlog() ) 
+		{
 		// marca de tiempo para la entrada del error
 		$fh = date("Y-m-d H:i:s (T)");
 
@@ -190,9 +195,12 @@ FUNC;
         $_contador= ( self::$_contador ++ );
 		$rast="";
 		foreach($rastreo as $k=>$v){
-			$rast .= "</li>". implode(", ",self::_convertir($v)) ."<li>\n";
-			// var_dump(self::_convertir($v));
-			$rastreo[$k] = implode(", ",self::_convertir($v));
+			// $convercion = self::_convertir($v);
+			foreach ( array("file","line","function") as $v){
+			$convercion[$v]= isset($v[$v])?$v[$v]:"no $v";
+			}
+			$rast .= "</li>". implode(", ",$convercion ) ."<li>\n";
+			$rastreo[$k] = implode(", ",$convercion );
 		}
 		$err = "<div><errorentry>";
 		$err .= "\t<strong><datetime>" . $fh . "</datetime></strong>";
@@ -249,6 +257,8 @@ FUNC;
 			global $debug;
 			$debug->error($err);
 		}
+	
+		} // mostrar errores.
 	}
 
 	public function __toString(){
