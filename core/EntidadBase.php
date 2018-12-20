@@ -152,7 +152,7 @@ class EntidadBase extends ExtensionPuente{
         $this->paginn = count($resultSet);
         return $resultSet;
     }
- 
+	private function _tabular($indent){ return $tabulador="\n".str_repeat("\t",4+$indent);}
     // html es una herramienta eredada del momento de renderizado.
     public function mostrar_editar($campo,$html=null,$valor=null){
 		// funcion que devuelve un contenido html
@@ -161,7 +161,7 @@ class EntidadBase extends ExtensionPuente{
 		//$for=new EntidadBaseFormularios();
 		
 		$txt="";
-		$tabulador="\n".str_repeat("\t",4);
+		// $tabulador="\n".str_repeat("\t",4);
 		if (in_array($campo,$this->columnas)){
 			// el campo existe:
 			$atr = $this->atributos[$campo] ;
@@ -180,7 +180,7 @@ class EntidadBase extends ExtensionPuente{
 						}else{
 							
 							$valor = $this->atributos[$campo]["dbdefault"] ;
-						}
+						}	
 					}else{
 						$valor=""; // sin valor.
 						
@@ -200,9 +200,6 @@ class EntidadBase extends ExtensionPuente{
 				foreach( $atr["list"] as $v)$lista[$v]=$v;
 			}
 			if (isset($atr["sql"])){
-				// $tiempoInicial = microtime(TRUE);
-				// echo "new db.".$atr["sql"][1]."..<br>\n";
-				// $ls = new $this->db;
 				$ls = $this->query($atr["sql"][1]);
 				
 				if ( is_null($ls) ){
@@ -213,36 +210,20 @@ class EntidadBase extends ExtensionPuente{
 					}
 				}
 			}
-			$txt.=$this->{$atr["typeform"]}($campo,$valor,$tabulador,$placeholder,$extra,$lista);
-			/*
-				// debo colocar el java a lo ultimo de la pagina
-				// para ello voy a intentar utilizar el recurso que debe estar
-				// disponible al llenar la plantilla $html.
-				  $html->javascript("$(function() { $('#$campo').datetimepicker({ language: 'es', pick12HourFormat: true }); } );");
-				break;
-					
-				default : $txt.="$tabulador<input type=\"text\" class=\"form-control\" "
-					."placeholder=\"$placeholder\" name=\"$campo\" $extra tipo=\""
-					.$atr["typeform"]."\" value=\"$valor\" \">\n";
-					break;
-			}
-			*/
+			
+			$txt.=$this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
 			if (isset($atr["htmlfirst"])){
-				$txt= $tabulador.$atr["htmlfirst"].$tabulador.$txt ;
+				$txt= $this->_tabular(1).$atr["htmlfirst"].$this->_tabular(0).$txt ;
 			}
 			if ( isset($atr["clas"] )){
-				$txt = "$tabulador<span class=\"".
-					$atr["clas"]."\">$label</span>$tabulador $txt" ;
+				$txt = $this->_tabular(2)."<span class=\"".
+					$atr["clas"]."\">$label</span> $txt" ;
 			}
 			
 			if (isset($atr["htmllast"])){
-				$txt="$txt $tabulador".$atr["htmllast"]."\n" ;
+				$txt="$txt ".$this->_tabular(1).$atr["htmllast"]."\n" ;
 			}
-			$txt = "
-				<div class=\"input-group\" >
-					$txt
-				</div>";
-			tiempo( __FILE__ , __LINE__);
+			$txt = $this->_tabular(0)."<div class=\"input-group\" >$txt".$this->_tabular(0)."</div>";
 			return $txt;
 		}else{
 			return "<div>->$campo<-</div>";
@@ -361,6 +342,7 @@ class EntidadBase extends ExtensionPuente{
 			// agregar. nuevo
 			// echo "agregando\n";
 			$idSalida=$this->add();
+			var_dump( $idSalida);echo "\n---------\n";
 			
 		}elseif ( $checkStatus ){
 			// editar existente.
@@ -646,23 +628,22 @@ class EntidadBase extends ExtensionPuente{
         $query="INSERT INTO ".$this->table." (".implode(", ",$this->columnas).")
                 VALUES(NULL, $t );";
         // echo $query;
-        
+        $idsave=false;
         $save=$this->query($query);
         if ($save){
-			$save = $this->db()->insert_id;
-			//clave id:
-			// echo $save;
+			$idsave = $this->db()->insert_id;
 			$this->falla = false;
-			$this->idRecordset = $save;
-		}
-		else{
+			$this->idRecordset = $idsave;
+		
+		}else{
+		
 			$this->falla = true;
 			Debuger::warn("Control_EntidadBase", $this->db()->error);
 			$save=$this->db()->error;
 			$this->idRecordset=null;
 		}
-        
-        return $save;
+		
+        return $idsave;
     }
  
 }

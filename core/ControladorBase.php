@@ -184,6 +184,11 @@ class ControladorBase{
 		echo "enviando... redirigido a ".$url.$archivo."/$controlador/$accion?$tx";
 
     }
-
+	public function RouterosAPI(){
+		require_once( "mods/routeros-api/routeros_api.class.php");
+		
+		return new RouterosAPI();
+		
+	}
 }
 ?>
