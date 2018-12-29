@@ -1,6 +1,7 @@
 <?php
 
 /* *******************************************
+ * 
  * clase que controla la parametrizacion 
  * de entrada al sistema.
  * 
