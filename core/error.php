@@ -1,7 +1,7 @@
 <?php
 define("COREVERSION","3");
-define("COREREVISION","2");
-define("COREACTUALIZACION","3");
+define("COREREVISION","3");
+define("COREACTUALIZACION","1");
 
 define("CORE",COREVERSION.".".COREREVISION.".".COREACTUALIZACION);
 
@@ -10,7 +10,7 @@ function ControlCierre() {
     $errstr  = "shutdown";
     $errno   = E_CORE_ERROR;
     $errline = 0;
-	if ( Debuger::showlog() )
+	if ( DebugerCore::showlog() )
 	{
 		$error = error_get_last();
 		if( !is_null($error) ){ // !== NULL) {
@@ -22,8 +22,10 @@ function ControlCierre() {
 			echo MiControlError::mostrar();
 			ChromePhp::log("cierre_ERROR:", "error:$errno, $errstr, $errfile, $errline" );
 			echo "error:$errno, $errstr, $errfile, $errline";
-			Debuger::render(); 	
-			echo "<!-- fin con errores.-->";
+			
+			DebugerCore::render(); 	
+			// DebugerCore::render(); 	
+			echo "<div style='color:red' > fin con errores.</div>";
 		}else{
 			// muestra errores:
 			
@@ -144,7 +146,7 @@ FUNC;
 
 	public static function gestorErrores($númerr, $menserr, $nombrearchivo, $númlínea, $vars)
 	{
-		if ( Debuger::showlog() ) 
+		if ( DebugerCore::showlog() ) 
 		{
 		// marca de tiempo para la entrada del error
 		$fh = date("Y-m-d H:i:s (T)");
@@ -202,7 +204,7 @@ FUNC;
 			$rast .= "</li>". implode(", ",$convercion ) ."<li>\n";
 			$rastreo[$k] = implode(", ",$convercion );
 		}
-		$err = "<div><errorentry>";
+		$err = "<div style='block'><errorentry>";
 		$err .= "\t<strong><datetime>" . $fh . "</datetime></strong>";
 		$err .= "\t<errornum>" . $númerr . "</errornum>";
 		$err .= "\t<errortype>" . $tipoerror[$númerr] . "</errortype>";
@@ -220,13 +222,13 @@ FUNC;
 
 		}
 		$rastr="";
-		$err1 = "<div><errorentry>";
+		$err1 = "<div style='block'><errorentry>";
 		$err1 .= "\t<strong><datetime>" . $fh . "</datetime></strong>\n";
 		$err1 .= "\t<errornum>" . $númerr . "</errornum>\n";
 		$err1 .= "\t<errortype>" . $tipoerror[$númerr] . "</errortype>\n";
-		$err1 .= "\t<samp><errormsg>" . str_replace("'",'"',$menserr) . "</errormsg></samp>\n";
-		$err1 .= "\t<scriptname>" . $nombrearchivo . "</scriptname>\n";
-		$err1 .= "\t<scriptlinenum>" . $númlínea . "</scriptlinenum>\n";
+		$err1 .= "\t<samp style='color:black'><errormsg>" . str_replace("'",'"',$menserr) . "</errormsg></samp>\n";
+		$err1 .= "\t<div class='block'><scriptname>" . $nombrearchivo . "</scriptname>\n";
+		$err1 .= "\t<scriptlinenum>" . $númlínea . "</scriptlinenum></div>\n";
 		$err1 .= "\t<ul id=\"error_".$_contador."\">\n\t\t".
 			$rastr."\n</ul>";
 
@@ -253,7 +255,7 @@ FUNC;
 				mostrar_error('".
 				base64_encode($err).
 				"')\n </script>\n ";
-			self::$_todoElError .= "<!-- $err1 -->";
+			self::$_todoElError .= "<div style='color:red' > $err1 </div>";
 			global $debug;
 			$debug->error($err);
 		}

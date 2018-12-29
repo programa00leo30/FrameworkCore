@@ -58,7 +58,7 @@ class ControlArchivo{
 			// $this->arreglo = explode("/",pathinfo( __file__, PATHINFO_DIRNAME));
 		}
 		$count = count($this->arreglo);
-
+		DebugerCore::log("controlArchivo:", "path:$path:\n");
 		self::$modelo = array_pop($this->arreglo);
 		self::$perfil = array_pop($this->arreglo);
 		self::$ruta = implode(DIRECTORY_SEPARATOR,$this->arreglo);
@@ -91,7 +91,7 @@ class ControlArchivo{
 			$this->falla=2;
 			$rt= $f;
 		}
-		DebugerCore::log("control_ARCHIVO:","arch:$archivo rt=$rt");
+		
 		return $rt;
 	}
 	/**
@@ -120,7 +120,9 @@ class ControlArchivo{
 	*/	
 	public function runing($archivo,$default="404View.php"){
 		// return "data://text/plain;base64,".base64_encode($this->RequireOnce($archivo)) ;
-		return self::RequireOnce($archivo,$default) ;
+		$rt=self::RequireOnce($archivo,$default) ;
+		DebugerCore::log("control_ARCHIVO:","arch:$archivo rt=$rt");
+		return $rt;
 	}
 
 	public static function setPerfil($perfil){ self::$perfil=$perfil ; }

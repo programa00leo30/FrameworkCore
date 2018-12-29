@@ -152,7 +152,7 @@ class EntidadBase extends ExtensionPuente{
         $this->paginn = count($resultSet);
         return $resultSet;
     }
-	private function _tabular($indent){ return $tabulador="\n".str_repeat("\t",4+$indent);}
+	// private function _tabular($indent){ return $tabulador="\n".str_repeat("\t",4+$indent);}
     // html es una herramienta eredada del momento de renderizado.
     public function mostrar_editar($campo,$html=null,$valor=null){
 		// funcion que devuelve un contenido html
@@ -211,6 +211,8 @@ class EntidadBase extends ExtensionPuente{
 				}
 			}
 			
+			return $this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
+			/*
 			$txt.=$this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
 			if (isset($atr["htmlfirst"])){
 				$txt= $this->_tabular(1).$atr["htmlfirst"].$this->_tabular(0).$txt ;
@@ -225,6 +227,7 @@ class EntidadBase extends ExtensionPuente{
 			}
 			$txt = $this->_tabular(0)."<div class=\"input-group\" >$txt".$this->_tabular(0)."</div>";
 			return $txt;
+			*/
 		}else{
 			return "<div>->$campo<-</div>";
 		}

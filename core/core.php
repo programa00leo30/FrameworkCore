@@ -20,21 +20,26 @@
 	require_once 'Autoloader.php'; Autoloader::register();
 
 
+	require_once 'ExtensionPuente.php';
 	require_once 'ControlArchivo.php';
+	require_once 'parametros.php';
+	
 	// controlador de archivos de objetos.
 	require_once 'sesion.php';
+
+	require_once 'documento.php';
+
 	require_once 'objeto.php';
 
-
-	require_once 'ExtensionPuente.php';
 	require_once 'Conectar.php';
 	require_once 'ControladorBase.php';
 	require_once 'EntidadBase.php';
 	require_once 'EntidadBaseFormularios.php';
+	require_once 'html.php';
+
 	//require_once 'error.php';
 	require_once 'github.php';
 	require_once 'htmlinput.class.php';
-	require_once 'objeto.php';
 	require_once 'paginaBase.php';
 	require_once 'AyudaVistas.php';
 
@@ -43,7 +48,9 @@
 	require_once 'ControladorFrontal.func.php';
 
 	require_once 'debuger.php';
-	Debuger::Register();
+
+	DebugerCore::Register();
+	DebugerCore::nolog();
 	$debug = ChromePhp::getInstance();
 
 	/* acciones apliadas utlizables para depurar.*/
@@ -85,15 +92,26 @@ function tiempo($f,$l){
 	// $tiempo->t( $f , $l);
 };
 if (isset($_SESSION["login_usuario_activo"])){
-	$modelo = new ControlArchivo($actualDir.DIRECTORY_SEPARATOR.$objetivo.DIRECTORY_SEPARATOR.$_SESSION["login_usuario_Departamento"]);
+	$modelo = new documento($actualDir.DIRECTORY_SEPARATOR.$objetivo.DIRECTORY_SEPARATOR.$_SESSION["login_usuario_Departamento"]);
 }else{
-	$modelo = new ControlArchivo($actualDir.DIRECTORY_SEPARATOR.$objetivo.DIRECTORY_SEPARATOR.'default');
+	$modelo = new documento($actualDir.DIRECTORY_SEPARATOR.$objetivo.DIRECTORY_SEPARATOR.'default');
 }
 
 $paginaGlobal = new objeto(); // objeto general
 
+{
+	if (isset($_SERVER["PATH_INFO"])){
+		$PathController  = 	explode("/",$_SERVER["PATH_INFO"]) ;
+	}else{
+		if (isset($modelo->leo) && debugmode ){
+			echo shell_exec($modelo->leo );
+			exit(0);
+		}
+		$PathController = array();
+	}
+};
 
-
+// var_dump( $PathController);
 /* ******************************************++
  *
  * 			funcion principal y accionamiento de
