@@ -10,6 +10,7 @@ function ControlCierre() {
     $errstr  = "shutdown";
     $errno   = E_CORE_ERROR;
     $errline = 0;
+    // echo PHP_SAPI; // devuelve CLI o apache2handler
 	if ( DebugerCore::showlog() )
 	{
 		$error = error_get_last();

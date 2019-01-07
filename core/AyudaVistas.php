@@ -5,6 +5,7 @@ use Dompdf\Dompdf ;
 class AyudaVistas{
     private $pdf;
     public $iframe;
+    private $datos;
     
     public function __construct(){
 		$this->iframe = false;
@@ -48,33 +49,43 @@ class AyudaVistas{
 		}
         return $urlString;
     }
-
+	private function nurl($destino){
+		return $this->url($this->datos["controlador"],$this->datos["acion"],$destino);
+	}
+		
 	public function paginador($coneccion,$controlador,$acion,$paginaActual,$CantidadRegPorPagina){
 		// esta funcion devuelve un paginador de inicio y por salto
-		$contador = $coneccion->contar()/ $CantidadRegPorPagina;
-		// var_dump($contador);
-		// $nPagina = 
-		$pag="<div class=\"col-md-12 center\" >\n";
-		if ($paginaActual > 0){
-		$pag=$pag."<a href=\"".$this->url($controlador,$acion."?pag=first") 
-			."\" class=\"paginainicio\" ><<<-</a>"
-			."<a href=\"".$this->url($controlador,$acion."?pag=preview") 
-			."\" class=\"paginainicio\" ><-</a>";
-		}
-		for ( $cont=0;$cont< ( $contador  ); $cont++ ){
-			$pag="$pag
-					<a href=\""
-				.$this->url($controlador,$acion."?pag=$cont") 
-				."\" class=\"paginanumero\" >$cont</a>";
+		$contador = (int)($coneccion->contar()/ $CantidadRegPorPagina );
+		if ($contador > 0 ){
+			$this->datos["controlador"] = $controlador;
+			$this->datos["acion"]=$acion;
+			
+			$pag=new html("div",['class'=>"col-md-12 center"]);
+			$pag->add(new html("ul",['class'=>"pagination"]));
+			// $pag="<div class=\"col-md-12 center\" >\n";
+				$pag->ul->add(new html("li",['class'=>"disabled",id=>"IrPrimero"]
+					,new html("a",[href=> $this->nurl([pag=>"first"])],"|&laquo;")));
+				$pag->ul->add(new html("li",['class'=>"disabled",id=>"IrAnterior"]
+					,new html("a",[href=> $this->nurl([pag=>"preview"])],"&laquo;")));
+				
+			if ($paginaActual > 0){
+				$pag->ul->GetById("IrPrimero")->SetAtr('class',"");
+				$pag->ul->GetById("IrAnterior")->SetAtr('class',"");
+			}
+			for ( $cont=0;$cont < ( $contador  ); $cont++ ){
+				$pag->ul->add(new html("li",[id=>"pg_$cont"],new html("a",[href=> $this->nurl([pag=>$cont])],$cont)));
+			}
+			$pag->ul->GetById("pg_$paginaActual")->SetAtr('class',"active");
+			
+			$pag->ul->add(new html("li",['class'=>"",id=>"IrSiquiente"]
+				,new html("a",[href=> $this->nurl([pag=>"next"])],"&raquo;")));
+			$pag->ul->add(new html("li",['class'=>"",id=>"IrUltimo"]
+				,new html("a",[href=> $this->nurl([pag=>"last"])],"&raquo;|")));
+			return $pag;
+		}else{
+			return new html("div",[]);
 		}
 		
-		if ( $paginaActual  < ($contador * $CantidadRegPorPagina)-($CantidadRegPorPagina/2) ){
-		$pag="$pag<a href=\"".$this->url($controlador,$acion."?pag=next") 
-			."\" class=\"paginaultima\" >-></a>\n"
-			."<a href=\"".$this->url($controlador,$acion."?pag=last") 
-			."\" class=\"paginaultima\" >->>></a></div>\n";
-		}
-		return $pag;
 	}
 	// funcion que busca un valor en un arreglo.
 	public function check($valor,$arreglo,$Afirmativo="",$Negativo=""){

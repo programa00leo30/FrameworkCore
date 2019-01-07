@@ -1,9 +1,12 @@
 <?php
 
 class html implements Iterator {
-	private $etiqueta, $atributos,$contenido,$extra,$tab=0;
-	private $indice=0;
-	private $maxLen = 105;
+	private $etiqueta, $atributos,$contenido,$extra;
+	protected $SinCierre=["br","meta","link","input","col"];
+	protected $tab=0;
+	protected $noCerrar=false;
+	protected $indice=0;
+	protected $maxLen = 105;
 	public function __construct($etiqueta,$atributos=array(),$contenido=array(),$atrExtras=""){
 		
 		$this->etiqueta = $etiqueta ;
@@ -39,7 +42,7 @@ class html implements Iterator {
 				if ($this->contenido->getElemto() == $campo)
 					return $this->contenido;
 		}
-		return false;
+		return new html("span",[id=>$campo],$campo);
 		
 	}
 	
@@ -58,6 +61,13 @@ class html implements Iterator {
 	public function tab($n){
 		$this->tab=$n;
 	}
+	public function noClose(){
+		/* accion extraña por la que no
+		 se requiere cierre de etiqueta.
+		*/
+		$this->noCerrar=true;
+		
+	}
 	public function GetTab(){return $this->tab; }
 	
 	public function SetAtr($key,$val){
@@ -74,11 +84,12 @@ class html implements Iterator {
 						if ($o instanceof html){
 							if ( $o->GetAtr("id") == $id ) { return $o; break; }
 						}
+					return new html("-");
 				}else{
 					if ($this->contenido instanceof html){
 						return $o->GetById($id);
 					}else{
-						return false;
+						return new html("-");
 					}
 				}
 			}
@@ -92,16 +103,19 @@ class html implements Iterator {
 				if ($this->contenido instanceof html){
 					return $o->GetById($id);
 				}else{
-					return false;
+					return new html("-");
 				}
 			}
 		}		
 	}
 	public function GetAtr($key){
 		// obtener atributo:
-		return (isset($this->atributos[$key])?$this->atributos[$key]:false);
+		return (isset($this->atributos[$key])?$this->atributos[$key]:this );
 	}
-	
+	public function GetAtrAll(){
+		return $this->atributos;
+	}
+
 	public function SetContent($content){
 		$this->contenido = $content;
 	}
@@ -125,11 +139,16 @@ class html implements Iterator {
 			// tabular contenido.
 			foreach ($contenido as $k=>$o){
 				if ($o instanceof html) $o->tab($this->tab + 1);
-				else $contenido[$k] = str_repeat("\t",$this->tab + 1).$o;
+				else {
+					if (strlen($contendio) > $this->maxLen )
+						$contenido[$k] = str_repeat("\t",$this->tab + 1).$o;
+				}
 			}
-			
 			$tcont = implode("\n",$contenido);
-			if (strlen($tcont)< $this->maxLen) $tcont = "\n".implode("\n",$contenido);
+
+			if (strlen($tcont) < $this->maxLen) 
+				$tcont = ((count($contenido) > 1)?implode("\n",$contenido):ltrim($contenido[0]));
+			
 			$contenido = $tcont;
 			
 		}else 
@@ -144,7 +163,7 @@ class html implements Iterator {
 			else 
 				if (strlen($contenido) > $this->maxLen  ) 
 					$contenido = str_repeat("\t",$this->tab + 1).$contenido ;
-		return $contenido;
+		return (string)$contenido;
 	}
 	
 	private function __conten(){
@@ -162,27 +181,64 @@ class html implements Iterator {
 			$rt = $this->contenido;
 		}
 		*/
+		
 		$rt=$this->tabular($this->contenido);
-		if (strlen($rt)>0){
-			$rt = ">".((strlen($rt)<$this->maxLen)?"":"\n" )
-			. $rt .((strlen($rt)<$this->maxLen)?"":"\n" )
-			.((strlen($rt)<$this->maxLen)?"":str_repeat("\t",$this->tab )) ."</". $this->etiqueta .">" ;
+		if (strlen($rt) > 0 ){
+			$rt = ">"
+			// ."(".strlen($rt).")"
+			. ((strlen($rt) < $this->maxLen)?"":"\n" )
+			. $rt .((strlen($rt) < $this->maxLen)?"":"\n" )
+			.((strlen($rt) < $this->maxLen)?"":str_repeat("\t",$this->tab )) 
+			.(($this->noCerrar)?"":"</". $this->etiqueta .">") ;
 		}else{
-			$rt = "/>" ;
+			if (!$this->noCerrar){
+				if ( in_array($this->getElemto(), $this->SinCierre )){
+					$rt = "/>" ;
+				}else{
+					$rt="></". $this->etiqueta .">" ;
+				}
+			}else{
+				$rt=">\n";
+			}
 		}
 		return $rt;
 		
 	}
 	
 	public function __toString(){
-		
+		if ( PHP_SAPI <> "cli" ) { // ; // devuelve CLI o apache2handler
 		return str_repeat("\t",$this->tab)."<". $this->etiqueta  
 			. ((strlen($this->extra)>0)?" ".$this->extra:"") 
 			. $this->showAtr() 
-			. $this->__conten() ;
+			. $this->__conten() 
+			
+			;
+		}else
+			return $this->toStringConsole();
+			
+	}
+	/* imprimir por consola los datos. */
+	public function toStringConsole(){
+		$rt="";$contenido=$this->contenido;
+		
+		if (is_array($contenido)){
+			// tabular contenido.
+			foreach ($contenido as $k=>$o){
+				if ($o instanceof html) $rt.=$o->toStringConsole();
+				else {
+					$rt.="\n ".$o;
+				}
+			}
+			
+		}else 
+			if ($contenido instanceof html) {
+				$rt.=$contenido->toStringConsole();
+			}
+			else 
+				$rt.= $contenido;
+		return (string)$rt."\n";
 		
 	}
-	
 	/******************************
 	 * 
 	 * funcion especializada en entendimiento 
@@ -304,4 +360,39 @@ class html implements Iterator {
 		return $rt;
     }
 
+}
+
+class coment extends html{
+	private $txt="";
+	private $idin;
+	static private $id=0;
+	
+	public function __construct($comentario){
+		// comentario es un texto.
+		$this->txt = $comentario;
+		$this->idin = "coment_".(self::$id++);
+		
+	}
+	public function GetById($id){
+		if ( "coment_$id" == $this->idin)
+			return $this;
+		else
+			return false;
+	}
+	public function add($object){
+		// no se puede agregar un objeto a un comentario.
+		$this->txt .= (string) $object ;
+	}
+	public function tab($n){
+		$this->tab=$n;
+	}
+	public function __toString(){
+		
+		return  ((strlen($rt) < $this->maxLen)?"":"\n" )
+				.str_repeat("\t",$this->tab )
+				."<!--"
+				."(".$this->idin.")"
+				.$this->txt
+				."-->";
+	}
 }

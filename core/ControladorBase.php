@@ -21,12 +21,13 @@ class ControladorBase{
         //Incluir todos los modelos de las bases de datos.
         foreach(glob($modelo->RutaVista("modelo")."*.php") as $file){
 			// echo "---cargando:$file\n";
-            require_once $file;
+			require_once $file;
         }
         //Incluir todos los modulos auxiliares.
-
+		
 		DebugerCore::msg("en ruta:".$modelo->RutaVista("auxiliar")."*.php");
         foreach(glob($modelo->RutaVista("auxiliar")."*.php",GLOB_NOSORT) as $file){
+            // echo "---cargando:$file\n";
             DebugerCore::msg("auxiliar: $file");
             require_once $file;
         }

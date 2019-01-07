@@ -498,6 +498,7 @@ class DebugerCore
 	
     public static function Register()
     {
+	self::$_mostrarlogTEXTO = new html("div",['class'=>"debugcore"]);
 	if (debugmode)
 		{
 			// modalidad de depuracion.
@@ -528,6 +529,7 @@ class DebugerCore
 		// para mostrar el texto al final
 		
 		//if (self::showdebug() )
+		if ( PHP_SAPI <>"CLI" ) // ; // devuelve CLI o apache2handler
 		{
 			echo "<div>
 			<style>
@@ -558,7 +560,8 @@ class DebugerCore
 			mostrar depurador:";
 			echo self::$_mostrarlogTEXTO;
 			echo "fin de datos:</div>";
-		}
+		}else
+			echo self::$_mostrarlogTEXTO;
 	}
 	public static function showdebug(){
 		$rt=false;
@@ -601,14 +604,24 @@ class DebugerCore
 		// var_dump($args);
 		// var_dump($ver);
 		if (count($args) != 2){
-			self::$_mostrarlogTEXTO .= "<!-- sin argumentos linea:$line archivo:$file -->";
+			// self::$_mostrarlogTEXTO .= "<!-- sin argumentos linea:$line archivo:$file -->";
+			self::$_mostrarlogTEXTO->add( new coment("sin argumentos linea:$line archivo:$file "));
 		}else{
 			$tipo=$args[0];
 			$mensaje=$args[1];
-			self::$_mostrarlogTEXTO .= "<div class='debug' style='block; color:black'><file>archivo:$file</file>
+			/*self::$_mostrarlogTEXTO .= "<div class='debug' style='block; color:black'><file>archivo:$file</file>
 			<line>($line)$extra</line>
 			<type>tipo:$tipo</type>
 			<msg>msg: $mensaje </msg></div>\n";
+			*/
+			self::$_mostrarlogTEXTO->add( 
+				new html("div",['class'=>"debug",style=>"block; color:black"] ,[
+					new html("file",[],"archivo:$file")
+					,new html("line",[],"($line)$extra")
+					,new html("type",[],"tipo:$tipo")
+					,new html("msg",[],"msg: $mensaje")
+				]
+			));
 		}
 		// echo self::$_mostrarlogTEXTO;
 		//echo "pasa por aqui;$line,f:$file,t:$tipo,m:$mensaje<br>\n";

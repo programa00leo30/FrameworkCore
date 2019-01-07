@@ -30,7 +30,7 @@ class PaginaBase{
 	}
 
 	public function favicon(){
-		echo "favicon.ico";
+		return "favicon.ico";
 	}
 	public function barra($archivo){
 		/*
@@ -42,7 +42,7 @@ class PaginaBase{
 		$this->modelo->RequireOnce("barrasuperior.php");
 		// require_once PATH.'/plantilla/barrasuperior.php';
 		*/
-		$this->entrada("plantilla",$archivo);//$this->pagina["archivo"]);
+		return $this->entrada("plantilla",$archivo);//$this->pagina["archivo"]);
 	}
 	public function contenido(){
 
@@ -71,11 +71,21 @@ class PaginaBase{
 			. "$archivo // file:$file" 
 		);
 		ob_start();
-			require_once($file);
+			$rt = require ($file);
 			$page = ob_get_contents();
 		ob_end_clean();
-		echo  $page;
-		
+		/*
+		echo "\n------archivo $file----------\n";
+		var_dump($rt);
+		echo "\n----------------\n";
+		var_dump($page);
+		*/
+		if ($rt instanceof html) return $rt;
+		else {
+			 // echo "<!-- no es intanca de html -->";
+			 echo $page ;
+			// return $rt ;
+		}
 	}
 	public function render(){
 		// $vista= "index";

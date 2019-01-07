@@ -5,6 +5,7 @@ class EntidadBase extends ExtensionPuente{
     protected $db;
     protected $conectar;
     protected $idRecordset; 	// para saber en que id estoy.
+    protected $selected = false; 	// para saber si hay un registro elegido.
 	protected $columnas ;		// listado de las columnas de la tabla
 	protected $atributos ;		// atributos de cada columna de la tabla
 	protected $ordeBy ;		// establecer el orden.
@@ -21,7 +22,7 @@ class EntidadBase extends ExtensionPuente{
         $this->ordeBy = ""; // sin orden por defecto
         $this->where ="";
 		
-        tiempo( __FILE__ , __LINE__);
+        
         foreach($this->atributos as $k=>$v) {
 			// $this->$k = new objeto($this->atributos[$k]);
 			// $this->$k = "";
@@ -39,7 +40,9 @@ class EntidadBase extends ExtensionPuente{
 		// $this->crearObjetos();
 		
 	}
-	
+	public function selecionado(){
+		return $this->idRecordset();
+	}
 	public function idRecordset(){
 		// ultimo valor adquirido del recodset actual
 		// si no hay seleccionado uno devolvera null.
@@ -145,8 +148,7 @@ class EntidadBase extends ExtensionPuente{
         $resultSet = array();
         //Devolvemos el resultset en forma de array de objetos
         while ($row = $query->fetch_object()) {
-           $resultSet[]=$row;
-           
+           $resultSet[]=$row; //new html("p",[],$row);
         }
 		$this->idRecordset = null;
         $this->paginn = count($resultSet);
@@ -211,7 +213,7 @@ class EntidadBase extends ExtensionPuente{
 				}
 			}
 			
-			return $this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
+			return $this->{$atr["typeform"]}($campo,$valor,$placeholder,$extra,$lista);
 			/*
 			$txt.=$this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
 			if (isset($atr["htmlfirst"])){
@@ -229,7 +231,7 @@ class EntidadBase extends ExtensionPuente{
 			return $txt;
 			*/
 		}else{
-			return "<div>->$campo<-</div>";
+			return new html("div",[],"->$campo<-");
 		}
 	}
 	public function mostrar($campo,$valor,$relacion="=",$extra="") {
@@ -345,7 +347,7 @@ class EntidadBase extends ExtensionPuente{
 			// agregar. nuevo
 			// echo "agregando\n";
 			$idSalida=$this->add();
-			var_dump( $idSalida);echo "\n---------\n";
+			// var_dump( $idSalida);echo "\n---------\n";
 			
 		}elseif ( $checkStatus ){
 			// editar existente.
@@ -445,8 +447,8 @@ class EntidadBase extends ExtensionPuente{
 			}
 		}else{
 			// falla de consulta
-			echo "falla de sistema . ";
-			echo $this->db()->error;
+			// echo "falla de sistema . ";
+			// echo $this->db()->error;
 			$this->idRecordset=null;
 			exit ;
 		}
@@ -617,6 +619,7 @@ class EntidadBase extends ExtensionPuente{
 			if ($campo != "id") {
 				if ($this->$campo == '' or $this->$campo == "NULL" ){
 					if (isset($this->atributos[$campo]["dbdefault"])){
+						
 						$t .= " '".$this->atributos[$campo]["dbdefault"]."' ," ;
 					}else{
 						$t .= " NULL ," ;
@@ -630,7 +633,7 @@ class EntidadBase extends ExtensionPuente{
 		
         $query="INSERT INTO ".$this->table." (".implode(", ",$this->columnas).")
                 VALUES(NULL, $t );";
-        // echo $query;
+        echo $query;
         $idsave=false;
         $save=$this->query($query);
         if ($save){
@@ -641,7 +644,9 @@ class EntidadBase extends ExtensionPuente{
 		}else{
 		
 			$this->falla = true;
-			Debuger::warn("Control_EntidadBase", $this->db()->error);
+			DebugerCore::warn("Control_EntidadBase", $this->db()->error);
+			// $t= new html("div",['class'=>"debuger"],"Control_EntidadBase".$this->db()->error);
+			// echo $t;
 			$save=$this->db()->error;
 			$this->idRecordset=null;
 		}

@@ -16,7 +16,7 @@ class EntidadBaseFormularios{
 		
 	}
 	
-	public function hidden( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function hidden( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		 // verificar si hay valor.. en caso de que no este no se envia el campo.
 		$txt="";
 		if ($valor !=""){
@@ -32,7 +32,7 @@ class EntidadBaseFormularios{
 			return new html("div",array("style"=>"hidden"),$valor);
 		
 	}
-	public function text( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function text( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 
 		return new html("input",array(
 			"type"=>"text"
@@ -43,7 +43,7 @@ class EntidadBaseFormularios{
 			),"");
 	}
 	
-	public function password( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function password( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		// este tipo de campo no envia informacion.
 		return new html("input",array(
 			"type"=>"password"
@@ -53,7 +53,7 @@ class EntidadBaseFormularios{
 			),"",$extra);
 			
 	}
-	public function textarea( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function textarea( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		 /*return "$tabulador<textarea class=\"form-control\" id='$campo' "
 					."name=\"$campo\" $extra >$valor</textarea>\n";
 		*/
@@ -63,7 +63,7 @@ class EntidadBaseFormularios{
 			,"id"=>$campo
 		),$valor." ",$extra);
 	}
-	public function numerico( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function numerico( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		 return new html("input",array(
 			"type"=>"number"
 			,"name"=>$campo
@@ -75,7 +75,7 @@ class EntidadBaseFormularios{
 					."placeholder=\"$placeholder\" name=\"$campo\" $extra value=\"$valor\">\n";
 		*/
 	}
-	public function moneda( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function moneda( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		return new html("input",array(
 			"type"=>"number"
 			,"name"=>$campo
@@ -92,7 +92,7 @@ class EntidadBaseFormularios{
 						."placeholder=\"$placeholder\" name=\"$campo\" $extra value=\"$valor\">\n";
 		*/
 	}
-	public function fechahora( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=null ){
+	public function fechahora( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=null ){
 		 // para generar el campo de fecha / hora
 		 // devo devolver este string para colocarlo al final de la pagina:
 		 // $html->javascript("$(function() { $('#$campo').datetimepicker({ language: 'es', pick12HourFormat: false }); } );");
@@ -102,14 +102,16 @@ class EntidadBaseFormularios{
 				array(
 		  * */
 		 
-		 return 
-					new html("input",array(
+		 return new html("div",['class'=>"form-group",id=>$campo],[
+					new html("label",['for'=>"input_$campo"],$campo)
+					,new html("input",array(
 							"type"=>"date" 
 							,"data-format"=>"MM/dd/yyyy HH:mm:ss PP" 
 							,"class"=>"form-control" 
 							,"name"=>"$campo" 
 							,"value"=>"$valor"
 					),"",$extra)
+				])
 					;
 		/*
 		 return <<<JAVAS
@@ -125,7 +127,7 @@ JAVAS
 ;		*/
 	}
 	
-	public function list( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=array() ){
+	public function list( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=array() ){
 		$label=isset($atr["label"])?$atr["label"]:$placeholder;
 		$this->contadorid ++;
 		// $campo = $this->contadorid . "_" . $campo;
@@ -148,7 +150,7 @@ JAVAS
 						 
 	}
 	
-	public function relacional( $campo,$valor,$tabulador="\t\t\t",$placeholder="placeholder",$extra="" ,$lista=array() ){
+	public function relacional( $campo,$valor,$placeholder="placeholder",$extra="" ,$lista=array() ){
 		 $label=isset($atr["label"])?$atr["label"]:$placeholder;
 		 $this->contadorid ++;
 		 // $campo = $this->contadorid . "_" . $campo;
