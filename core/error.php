@@ -1,17 +1,77 @@
 <?php
-define("COREVERSION","3");
-define("COREREVISION","3");
-define("COREACTUALIZACION","1");
+define("VERSION","2.0.5");
 
-define("CORE",COREVERSION.".".COREREVISION.".".COREACTUALIZACION);
+class Debuger
+{
+	static private  $mostrarlog = true;
+	static private  $_mostrarlogTEXTO = "";
+	
+    public static function Register()
+    {
+	if (defined ("debugmode")) 
+		{
+			// modalidad de depuracion.
+			// error_reporting  (E_ALL);
+			// ini_set ('display_errors', true);
+			// set_error_handler(array('MiControlError', 'errorHandler'));
+			// cambiando control de errores:
+			/* utilizar herramientas de tiempo en modo depurador:*/
+			self::SeguroRegister();
+
+		}else{
+			self::$mostrarlog=false;
+		}
+	}
+	public static function SeguroRegister(){
+			set_error_handler(array('MiControlError', 'gestorErrores'));
+			// error_reporting(E_ALL | E_STRICT);
+			register_shutdown_function( "ControlCierre" );
+	}
+	public static function render(){
+		// para mostrar el texto al final
+		if (self::$mostrarlog){
+			echo self::$_mostrarlogTEXTO;
+		}
+	}
+	public static function nolog(){
+		self::$mostrarlog =false;
+	}
+	public static function log(){
+		 
+		// debug_print_backtrace();
+		$ver=debug_backtrace();
+		foreach ($ver as $k=>$v){
+		 if ($v["file"]==__file__)array_shift($ver);
+		}
+		$file = $ver[0]["file"];
+		$line = $ver[0]["line"];
+		$args = func_get_args();
+		if (count($args) != 2){
+			self::$_mostrarlogTEXTO= "<!-- sin argumentos linea:$line archivo:$file-->";
+		}else{
+			$tipo=$args[0];
+			$mensaje=$args[1];
+			self::$_mostrarlogTEXTO= "\n<!--linea:$line archivo:$file :: <br>\n $tipo :: $mensaje -->\n";
+		}
+	
+	}
+	public static function msg(){
+		 $args = func_get_args();
+		self::log("msg",$args[0]);
+	}
+	public static function warn(){
+		 $args = func_get_args();
+		self::log("WARN",$args[0]);
+	}
+}
+
 
 function ControlCierre() {
     $errfile = "unknown file";
     $errstr  = "shutdown";
     $errno   = E_CORE_ERROR;
     $errline = 0;
-	if ( DebugerCore::showlog() )
-	{
+	if (defined("debugmode")){
 		$error = error_get_last();
 		if( !is_null($error) ){ // !== NULL) {
 			$errno   = $error["type"];
@@ -19,31 +79,22 @@ function ControlCierre() {
 			$errline = $error["line"];
 			$errstr  = $error["message"];
 			MiControlError::errorHandler( $errno, $errstr, $errfile, $errline);
-			echo MiControlError::mostrar();
-			ChromePhp::log("cierre_ERROR:", "error:$errno, $errstr, $errfile, $errline" );
-			echo "error:$errno, $errstr, $errfile, $errline";
-			
-			DebugerCore::render(); 	
-			// DebugerCore::render(); 	
-			echo "<div style='color:red' > fin con errores.</div>";
+			echo "<!-- error mostrado: -->".MiControlError::mostrar()."<!-- fin de error mostrado. -->";
 		}else{
 			// muestra errores:
-			
-			Debuger::render(); 	
-			// echo (MiControlError::salida())?MiControlError::salida():"" ;
-			echo "<!-- fin sin errores.-->";
+			echo "<!-- error:".MiControlError::salida()." -->" ;
 		}
 	}
 	// cierre de pagina.
-
+	echo "<!-- limpio -->";
+	Debuger::render();
 }
 
-// MiControlError::gestorErrores($númerr, $menserr, $nombrearchivo, $númlínea, $vars)
+
 class MiControlError
 {
     protected static $_toStringException;
     protected static $_todoElTexto="";
-    protected static $_todoElError="";
     protected static $_contador=0;
     protected static $_barraColocada=false;
 
@@ -65,11 +116,11 @@ class MiControlError
 		else{
 			self::$_todoElTexto = $txe;
 		}
-
+		
         if (isset(self::$_toStringException))
         {
             $exception = self::$_toStringException;
-            // Always unset '_toStringException', we don't want a straggler to be
+            // Always unset '_toStringException', we don't want a straggler to be 
             // found later if something came between the setting and the error
             self::$_toStringException = null;
             // echo "-----------".$errorMessage."----------------";
@@ -77,21 +128,21 @@ class MiControlError
             if (preg_match('~^Method .*::__toString\(\) must return a string value$~', $errorMessage))
                 throw $exception;
         }
-
+        
         return false;
     }
-
+	
 	public static function mostrar(){
 		// si existen errores mostrarlos.
-		return isset(self::$_todoElError )?self::$_todoElError:"--";
+		return isset(self::$_todoElTexto )?self::$_todoElTexto:"--";
 	}
-
+	
 	public static function contador(){
 		return self::$_contador;
 	}
     public static function throwToStringException($exception)
     {
-        // Should not occur with prescribed usage, but in case of recursion: clean out exception,
+        // Should not occur with prescribed usage, but in case of recursion: clean out exception, 
         // return a valid string, and weep
         if (isset(self::$_toStringException))
         {
@@ -110,15 +161,15 @@ class MiControlError
 		}else return "";
 	}
      public static function salida(){
-		 if(debugmode)
-			if (self::$_contador > 0 )
-			{
-				$barra=self::colocarBarra();
-
+		 if(defined("debugmode"))
+		 if (self::$_contador > 0 )
+		 {
+			$barra=self::colocarBarra();
+			
 		$_t=<<<FUNC
 			$barra
 		<script>
-
+			
 			function ver_error(id){
 				var elem = document.getElementById("error_"+id);
 				if ( elem.style["display"] == "none" ){
@@ -127,27 +178,22 @@ class MiControlError
 					elem.style="display:none;";
 				}
 			};
-
+			
 			function mostrar_error(texto){
 				var barra=document.getElementById("barraerror");
-				/* decodificar base64encode */
-				barra.innerHTML = barra.innerHTML + unescape(atob(texto)) ;
+				barra.innerHTML = barra.innerHTML + unescape(texto) ;
 			};
-
+			
 		</script>
 FUNC;
-		global $debug;
-		$debug->error( self::$_todoElTexto ."////" );
-		return true; //self::$_contador;
-		// return $_t . self::$_todoElTexto .self::$_contador;
-		}else return false; // self::$_contador;
 
+		return $_t . self::$_todoElTexto .self::$_contador;
+		}else return self::$_contador;
+		
 	}
-
-	public static function gestorErrores($númerr, $menserr, $nombrearchivo, $númlínea, $vars)
+	
+	public static function gestorErrores($númerr, $menserr, $nombrearchivo, $númlínea, $vars) 
 	{
-		if ( DebugerCore::showlog() ) 
-		{
 		// marca de tiempo para la entrada del error
 		$fh = date("Y-m-d H:i:s (T)");
 
@@ -172,39 +218,28 @@ FUNC;
 					);
 		// conjunto de errores por el cuál se guardará un seguimiento de una variable
 		$errores_usuario = array(E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE);
-		/*
 		// obteniendo el rastreo.
 		ob_start();
 			debug_print_backtrace();
 			$trace = ob_get_contents();
         ob_end_clean();
-		
+
         // Remove first item from backtrace as it's this function which
         // is redundant.
         $trace = preg_replace ('/^#0\s+' . __FUNCTION__ . "[^\n]*\n/", '', $trace, 1);
         // Renumber backtrace items.
-        // $trace = preg_replace ('/^#(\d+)/me', '\'#\' . ($1 - 1)', $trace);
+        // $trace = preg_replace ('/^#(\d+)/me', '\'#\' . ($1 - 1)', $trace); 
         // quitar los errores posibles de comillado.
         $trace=str_replace("'",'"',$trace);
         $trace=str_replace("\r",'<br>',$trace);
-
+        
         $rastreo = explode("\n",$trace);
         // quitar posibles caracteres de error:
         foreach($rastreo as $k=>$v) $rastreo[$k] = htmlentities(utf8_encode($v));
-		*/
-		$rastreo = debug_backtrace(6);
-		
+        
         $_contador= ( self::$_contador ++ );
-		$rast="";
-		foreach($rastreo as $k=>$v){
-			// $convercion = self::_convertir($v);
-			foreach ( array("file","line","function") as $v){
-			$convercion[$v]= isset($v[$v])?$v[$v]:"no $v";
-			}
-			$rast .= "</li>". implode(", ",$convercion ) ."<li>\n";
-			$rastreo[$k] = implode(", ",$convercion );
-		}
-		$err = "<div style='block'><errorentry>";
+        
+		$err = "<div><errorentry>";
 		$err .= "\t<strong><datetime>" . $fh . "</datetime></strong>";
 		$err .= "\t<errornum>" . $númerr . "</errornum>";
 		$err .= "\t<errortype>" . $tipoerror[$númerr] . "</errortype>";
@@ -212,39 +247,14 @@ FUNC;
 		$err .= "\t<scriptname>" . $nombrearchivo . "</scriptname>";
 		$err .= "\t<scriptlinenum>" . $númlínea . "</scriptlinenum>";
 		$err .= "\t<a href=\"#\" onClick=\"ver_error(%27" . $_contador . "%27);\" >#</a>";
-		$err .= "\t<ul visible=\"hidden\" style=\"display:none\" id=\"error_".$_contador."\"><li>".
-			// implode("</li><li>",$rastreo)
-			$rast ."</li></ul>";
-		$rastr="";
-		// var_dump($rastreo);
-		foreach($rastreo as $v) {
-			$rastr.= "<li>\n<script> document.write( atob('".base64_encode($v)."'));</script>\n</li>";
-
-		}
-		$rastr="";
-		$err1 = "<div style='block'><errorentry>";
-		$err1 .= "\t<strong><datetime>" . $fh . "</datetime></strong>\n";
-		$err1 .= "\t<errornum>" . $númerr . "</errornum>\n";
-		$err1 .= "\t<errortype>" . $tipoerror[$númerr] . "</errortype>\n";
-		$err1 .= "\t<samp style='color:black'><errormsg>" . str_replace("'",'"',$menserr) . "</errormsg></samp>\n";
-		$err1 .= "\t<div class='block'><scriptname>" . $nombrearchivo . "</scriptname>\n";
-		$err1 .= "\t<scriptlinenum>" . $númlínea . "</scriptlinenum></div>\n";
-		$err1 .= "\t<ul id=\"error_".$_contador."\">\n\t\t".
-			$rastr."\n</ul>";
-
+		$err .= "\t<ul visible=\"hidden\" style=\"display:none\" id=\"error_".$_contador."\"><li>". 
+			implode("</li><li>",$rastreo)."</li></ul>";
+		
 		if (in_array($númerr, $errores_usuario)) {
-			ob_start();
-				var_dump($vars);
-				$vars = ob_get_contents();
-			ob_end_clean();
-
-			$err .= "\t<vartrace>"
-			//. wddx_serialize_value($vars, "Variables")
-			. $vars
-			. "</vartrace>";
+			$err .= "\t<vartrace>" . wddx_serialize_value($vars, "Variables") . "</vartrace>";
 		}
 		$err .= "</errorentry></div>";
-
+		
 		if (debugmode){
 			// si no esta el modo de depuracion no se agregan errores.
 			// $registro = file_get_contents(PATH ."/auxiliar/error.log");
@@ -253,64 +263,16 @@ FUNC;
 				self::$_todoElTexto.
 				"<script>
 				mostrar_error('".
-				base64_encode($err).
+				$err.
 				"')\n </script>\n ";
-			self::$_todoElError .= "<div style='color:red' > $err1 </div>";
-			global $debug;
-			$debug->error($err);
 		}
-	
-		} // mostrar errores.
 	}
-
+	
 	public function __toString(){
 		return $this->salida();
 	}
 	
-	private static function _convertir($object)
-    {
-        // if this isn't an object then just return it
-        if (!is_object($object)) {
-            return $object;
-        }
-        //Mark this object as processed so we don't convert it twice and it
-        //Also avoid recursion when objects refer to each other
-        $object_as_array = array();
-        // first add the class name
-        $object_as_array['___class_name'] = get_class($object);
-        // loop through object vars
-        $object_vars = get_object_vars($object);
-        foreach ($object_vars as $key => $value) {
-            // same instance as parent object
-            if ($value === $object || in_array($value, $this->_processed, true)) {
-                $value = 'recursion - parent object [' . get_class($value) . ']';
-            }
-            $object_as_array[$key] = $this->_convert($value);
-        }
-        $reflection = new ReflectionClass($object);
-        // loop through the properties and add those
-        foreach ($reflection->getProperties() as $property) {
-            // if one of these properties was already added above then ignore it
-            if (array_key_exists($property->getName(), $object_vars)) {
-                continue;
-            }
-            $type = $this->_getPropertyKey($property);
-            if ($this->_php_version >= 5.3) {
-                $property->setAccessible(true);
-            }
-            try {
-                $value = $property->getValue($object);
-            } catch (ReflectionException $e) {
-                $value = 'only PHP 5.3 can access private/protected properties';
-            }
-            // same instance as parent object
-            if ($value === $object || in_array($value, $this->_processed, true)) {
-                $value = 'recursion - parent object [' . get_class($value) . ']';
-            }
-            $object_as_array[$type] = $this->_convert($value);
-        }
-        return $object_as_array;
-    }
+	
 }
 
 
@@ -329,6 +291,7 @@ class tiempo{
 			"');</scrip>";
 	}
 } ;
+
 
 
 

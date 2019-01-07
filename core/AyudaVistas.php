@@ -13,7 +13,7 @@ class AyudaVistas{
 	public function incluir($archivo,$carpeta){
 		global $modelo,$paginaGlobal;
 		// echo "PaginaBase:archivo:$archivo actuador:$actuador<br>\n";
-		$modelo->setAccion($carpeta);
+		$modelo->setActuador($carpeta);
 		// $file=$this->modelo->runing($this->pagina["archivo"]);
 		$file=$modelo->runing($archivo);
 		echo array("<!--helper-->","<!-- helper df -->","<!-- helper 404 $archivo -->")[$modelo->falla()];
@@ -24,20 +24,9 @@ class AyudaVistas{
 		// return $archivo->
 	}
 	
-    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$argumentos = array("ifram"=>false) ){
-		// hay que agregar el scrip del que provino la peticion.
-		//phpinfo();
-		
-		$archivo=basename($_SERVER['SCRIPT_NAME']);
-		$iframe = (isset($argumentos["ifram"])?$argumentos["ifram"]:false) or $this->iframe;
-		unset($argumentos["ifram"]);
-		
-		$get="?";
-		foreach($argumentos as $k=>$v) $get.="$k=$v&";
-		$get=rtrim($get,"&");
-		if (strlen($get)>2)$accion.=$get;
-		
-		$url = URL.$archivo;
+    public function url($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO,$ifram=false){
+		$iframe = $ifram or $this->iframe;
+		$url = URL;
 		$url = rtrim($url,"/");
 		//echo $url;
 		// la url debe contener el archivo destino: index.php , 

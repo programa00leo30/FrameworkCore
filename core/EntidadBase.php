@@ -9,11 +9,8 @@ class EntidadBase extends ExtensionPuente{
 	protected $atributos ;		// atributos de cada columna de la tabla
 	protected $ordeBy ;		// establecer el orden.
 	protected $where ;		// establecer condicion para toda la tabla.
-	protected $falla = false; // sin fallas en la consulta.
-	
 	public $paginn; 		// un paginador.
 	public $objetos ;		// los distintos objetos de las paginas.
-	
 	
     public function __construct($table,$perfil="default") {
 		parent::addExt(new EntidadBaseFormularios());
@@ -65,7 +62,15 @@ class EntidadBase extends ExtensionPuente{
 			$this->objetos->$k = $v;
 		}
 	}
-
+	/*
+	private function crearObjetos(){
+		// foreach ($this->columnas as $k=>$v){
+			$this->objetos = new objeto($this->columnas);
+			
+		// }
+		// $this->objetos["columnas"] = new objeto();
+	}
+	*/
 	public function columns(){
 		return $this->columnas ;
 	}
@@ -78,13 +83,11 @@ class EntidadBase extends ExtensionPuente{
 		if ( !$rtnQuery  ){
 			// el retorno es falso, falla de consulta.
 			// sesion::set("msg","(".$this->con->errorCode.")".$this->con->errorInfo ."query:$strQuery" );
-			trigger_error("(".$this->conectar->errorCode.")".$this->conectar->errorInfo 
-				."consulta:$strQuery" , E_USER_ERROR);
+			trigger_error("(".$this->conectar->errorCode.")".$this->conectar->errorInfo ."consulta:$strQuery" , E_USER_ERROR);
 			// crear un registro en blanco.
 			$resultSet = new objeto ;
 			foreach ( $this->columnas as $camop ) 
 				$resultSet->$camop = "";
-			$this->falla=true;
 			
 			return $resultSet ;
 		}
@@ -96,8 +99,6 @@ class EntidadBase extends ExtensionPuente{
 				foreach ( $this->columnas as $camop ) 
 					$rtnQuery->$camop = "";
 			}
-			$this->falla = true;
-			
 			return $rtnQuery ;
 		}
 	}
@@ -108,26 +109,14 @@ class EntidadBase extends ExtensionPuente{
      
     public function query($query){
 		// salvedad para utilizar con precacucion.
-        try{
-			$rt =  $this->db->query($query);
-			return $rt;
-		}
-		catch (Exception $e) 
-		{
-			Debuger::warn("falla sql: $query ".$e->getMessage() );
-			return false;
-		}
-		
+        return $this->db->query($query);
     }
      
     public function db(){
         return $this->db;
     }
     
-	public function fail(){
-		// retorna si fue exitosa la consulata
-		return $this->falla;
-	}
+	
 			
     public function getAll($orden = "default" ,$inic=0,$cant=0 ){
 		
@@ -140,7 +129,7 @@ class EntidadBase extends ExtensionPuente{
 			$limit ="";
 		$strQuery="SELECT * FROM ".$this->table." ".$this->where() ." $orden $limit" ;
 		// echo "<p>$strQuery</p>";
-        $query=$this->query($strQuery);
+        $query=$this->db->query($strQuery);
         // echo "SELECT * FROM $this->table $orden $limit" ;
         $resultSet = array();
         //Devolvemos el resultset en forma de array de objetos
@@ -152,7 +141,50 @@ class EntidadBase extends ExtensionPuente{
         $this->paginn = count($resultSet);
         return $resultSet;
     }
-	// private function _tabular($indent){ return $tabulador="\n".str_repeat("\t",4+$indent);}
+    /*
+    private function botonlistar($registro,$nombreID,$labelButon){
+		/*
+		  <div class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action <span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a href="#">Action</a></li>
+          <li><a href="#">Another action</a></li>
+          <li><a href="#">Something else here</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="#">Separated link</a></li>
+        </ul>
+      </div><!-- /btn-group -->
+      * /
+		$tx=<<<texto
+				<div class="input-group-btn">
+					
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						$labelButon<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:void(0)" >elige:</a></li>
+						<li role="separator" class="divider"></li>
+texto
+;	
+		foreach ($registro as $k=>$v){
+			$js=" onclick=\"$('#$nombreID').val('$k');\" ";
+			
+			$tx = <<<textofor
+$tx
+						<li><a href="javascript:void(0)" $js >$v</a></li>
+textofor
+;
+		}
+			$tx = <<<textoultm
+$tx
+					</ul>
+				</div><!-- /btn-group -->
+textoultm
+;
+		return $tx;
+    }
+    */
+    
     // html es una herramienta eredada del momento de renderizado.
     public function mostrar_editar($campo,$html=null,$valor=null){
 		// funcion que devuelve un contenido html
@@ -161,7 +193,7 @@ class EntidadBase extends ExtensionPuente{
 		//$for=new EntidadBaseFormularios();
 		
 		$txt="";
-		// $tabulador="\n".str_repeat("\t",4);
+		$tabulador="\n".str_repeat("\t",4);
 		if (in_array($campo,$this->columnas)){
 			// el campo existe:
 			$atr = $this->atributos[$campo] ;
@@ -180,7 +212,7 @@ class EntidadBase extends ExtensionPuente{
 						}else{
 							
 							$valor = $this->atributos[$campo]["dbdefault"] ;
-						}	
+						}
 					}else{
 						$valor=""; // sin valor.
 						
@@ -200,7 +232,10 @@ class EntidadBase extends ExtensionPuente{
 				foreach( $atr["list"] as $v)$lista[$v]=$v;
 			}
 			if (isset($atr["sql"])){
-				$ls = $this->query($atr["sql"][1]);
+				// $tiempoInicial = microtime(TRUE);
+				// echo "new db.".$atr["sql"][1]."..<br>\n";
+				// $ls = new $this->db;
+				$ls = $this->db->query($atr["sql"][1]);
 				
 				if ( is_null($ls) ){
 					// echo "null: ".$atr["sql"][1]."\n";
@@ -210,24 +245,37 @@ class EntidadBase extends ExtensionPuente{
 					}
 				}
 			}
-			
-			return $this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
+			$txt.=$this->{$atr["typeform"]}($campo,$valor,$tabulador,$placeholder,$extra,$lista);
 			/*
-			$txt.=$this->{$atr["typeform"]}($campo,$valor,$this->_tabular(2),$placeholder,$extra,$lista);
+				// debo colocar el java a lo ultimo de la pagina
+				// para ello voy a intentar utilizar el recurso que debe estar
+				// disponible al llenar la plantilla $html.
+				  $html->javascript("$(function() { $('#$campo').datetimepicker({ language: 'es', pick12HourFormat: true }); } );");
+				break;
+					
+				default : $txt.="$tabulador<input type=\"text\" class=\"form-control\" "
+					."placeholder=\"$placeholder\" name=\"$campo\" $extra tipo=\""
+					.$atr["typeform"]."\" value=\"$valor\" \">\n";
+					break;
+			}
+			*/
 			if (isset($atr["htmlfirst"])){
-				$txt= $this->_tabular(1).$atr["htmlfirst"].$this->_tabular(0).$txt ;
+				$txt= $tabulador.$atr["htmlfirst"].$tabulador.$txt ;
 			}
 			if ( isset($atr["clas"] )){
-				$txt = $this->_tabular(2)."<span class=\"".
-					$atr["clas"]."\">$label</span> $txt" ;
+				$txt = "$tabulador<span class=\"".
+					$atr["clas"]."\">$label</span>$tabulador $txt" ;
 			}
 			
 			if (isset($atr["htmllast"])){
-				$txt="$txt ".$this->_tabular(1).$atr["htmllast"]."\n" ;
+				$txt="$txt $tabulador".$atr["htmllast"]."\n" ;
 			}
-			$txt = $this->_tabular(0)."<div class=\"input-group\" >$txt".$this->_tabular(0)."</div>";
+			$txt = "
+				<div class=\"input-group\" >
+					$txt
+				</div>";
+			tiempo( __FILE__ , __LINE__);
 			return $txt;
-			*/
 		}else{
 			return "<div>->$campo<-</div>";
 		}
@@ -241,7 +289,7 @@ class EntidadBase extends ExtensionPuente{
 			// echo "entrando $posicion";
 			// primera vuelta verificar estado y comenzar.
 			$sql= "SELECT * FROM $this->table WHERE `$campo`$relacion'$valor' $extra ;";
-			$query=$this->query($sql);
+			$query=$this->db->query($sql);
 			if (!$query){
 				// falla de consulta.
 				// falla de consulta
@@ -306,26 +354,21 @@ class EntidadBase extends ExtensionPuente{
 
     public function checkForm($post){
 		$chk=true;$fail=array();
-		DebugerCore::log("control_EntidadBase","verificando campos");
-		 
 		foreach($this->columnas as $campo){
 			if (array_key_exists($campo,$post)){
 				// buen camino.
-				DebugerCore::log("Control_EntidadBase","el campo $campo es verificado!");
 				$this->$campo = $post[$campo];
 			}else{
 				// mal caminio. 
 				// verificar si es necesario. ( null )
-				if ( $this->atributos[$campo]["dbtipo"] == "not null" )
-				{
+				if ( $this->atributos[$campo]["dbtipo"] == "not null" 
 					// el id es de tipo autoincrement. ( unico de su tipo. )
-					DebugerCore::log("Control_EntidadBase","el campo $campo es nulo falla!");
+				){
 					$chk=false; // falla de comprobacion.
 					$fail[]=$campo;
 				};
 				if ($this->atributos[$campo]["dbtipo"] == "default"){
 					// tiene valor por defecto.
-					DebugerCore::log("Control_EntidadBase","el campo $campo es nulo valor defecto!");
 					$this->$campo  = $this->atributos[$campo]["dbdefault"]
 ;				}
 				
@@ -345,7 +388,6 @@ class EntidadBase extends ExtensionPuente{
 			// agregar. nuevo
 			// echo "agregando\n";
 			$idSalida=$this->add();
-			var_dump( $idSalida);echo "\n---------\n";
 			
 		}elseif ( $checkStatus ){
 			// editar existente.
@@ -430,7 +472,7 @@ class EntidadBase extends ExtensionPuente{
         $sql= "SELECT * FROM $this->table WHERE $column='$value' ;";
         // $sql= "SELECT * FROM $this->table WHERE idMesa='5' ;";
         // echo $sql;
-        $query=$this->query($sql);
+        $query=$this->db->query($sql);
 		if ($query){
 			if ($query->num_rows > 0 ){
 				while($row = $query->fetch_object()) {
@@ -456,18 +498,23 @@ class EntidadBase extends ExtensionPuente{
     }
      
     public function deleteById($id){
-		$sql="DELETE FROM ".$this->table." WHERE id='$id' LIMIT 1 ;";
+		$sql="DELETE FROM ".$this->table." WHERE id='$id' limit 1, 1 ;";
 		// echo $sql."\n<br>";
         // ejecutando la consulta.
-        $query=$this->query($sql);
- 
+        $query=$this->db->query($sql); 
+        if (!$query){
+			// falla de consulta
+			echo "falla de sistema . ";
+			echo $this->db()->error;
+			exit ;
+		}
 		$this->idRecordset=null;
         return $query;
         
     }
      
     public function deleteBy($column,$value){
-        $query=$this->query("DELETE FROM ".$this->table." WHERE `$column`='$value'"); 
+        $query=$this->db->query("DELETE FROM $this->table WHERE $column='$value'"); 
         $this->idRecordset=null;
         return $query;
         
@@ -483,7 +530,7 @@ class EntidadBase extends ExtensionPuente{
 		$where =$this->where();
 		
 		$cmd="SELECT * FROM $this->table $where ORDER BY id DESC";
-		$query=$this->query($cmd);
+		$query=$this->db->query($cmd);
         $query= $this->error($query,$cmd);
         $rt = false;
 		// echo $cmd;
@@ -631,22 +678,21 @@ class EntidadBase extends ExtensionPuente{
         $query="INSERT INTO ".$this->table." (".implode(", ",$this->columnas).")
                 VALUES(NULL, $t );";
         // echo $query;
-        $idsave=false;
-        $save=$this->query($query);
+        
+        $save=$this->db()->query($query);
         if ($save){
-			$idsave = $this->db()->insert_id;
-			$this->falla = false;
-			$this->idRecordset = $idsave;
-		
-		}else{
-		
-			$this->falla = true;
-			Debuger::warn("Control_EntidadBase", $this->db()->error);
+			$save = $this->db()->insert_id;
+			//clave id:
+			// echo $save;
+			$this->idRecordset = $save;
+		}
+		else{
+			echo $this->db()->error;
 			$save=$this->db()->error;
 			$this->idRecordset=null;
 		}
-		
-        return $idsave;
+        
+        return $save;
     }
  
 }

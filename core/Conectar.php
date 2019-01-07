@@ -8,9 +8,8 @@ class Conectar{
 		global $modelo;
 		// si existe un nombre al perfil de coneccion usarlo:
         // $db_cfg = require PATH.'/config/database.php';
-        // $modelo->setActuador("config");
-        // $db_cfg = require $modelo->runing("database.php") ;
-        $db_cfg = require $modelo->MiArchivo("config","database.php") ;
+        $modelo->setActuador("config");
+        $db_cfg = require $modelo->runing("database.php") ;
         $this->driver=$db_cfg[$name]["driver"];
         $this->host=$db_cfg[$name]["host"];
         $this->user=$db_cfg[$name]["user"];

@@ -11,9 +11,9 @@ Abstract class ExtensionPuente{
        
     function __construct(){$_this = $this;}
    
-    public function addExt($object,$args=null)
+    public function addExt($object)
     {
-		$objeto = new $object($args);
+		$objeto = new $object;
         $this->_exts[]["objeto"]=$objeto;
         $this->_exts[]["nombre"]=$object;
     }
