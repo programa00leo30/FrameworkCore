@@ -72,7 +72,7 @@ class AyudaVistas{
 				$pag->ul->GetById("IrPrimero")->SetAtr('class',"");
 				$pag->ul->GetById("IrAnterior")->SetAtr('class',"");
 			}
-			for ( $cont=0;$cont < ( $contador  ); $cont++ ){
+			for ( $cont=0;$cont <= ( $contador  ); $cont++ ){
 				$pag->ul->add(new html("li",[id=>"pg_$cont"],new html("a",[href=> $this->nurl([pag=>$cont])],$cont)));
 			}
 			$pag->ul->GetById("pg_$paginaActual")->SetAtr('class',"active");

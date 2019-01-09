@@ -396,3 +396,33 @@ class coment extends html{
 				."-->";
 	}
 }
+
+class texto extends html{
+	// clase de puro texto simple sin etiquetas..
+	private $txt="";
+	private $idin=0;
+		
+	public function __construct($texto){
+		// comentario es un texto.
+		$this->txt[$this->idin] = $texto;		
+		$this->idin++;
+	}
+	public function GetById($id){
+			return false;
+	}
+	public function add($object){
+		// no se puede agregar un objeto a un comentario.
+		$this->txt[$this->idin] = $object ;
+		$this->idin++;
+	}
+	public function tab($n){
+		$this->tab=$n;
+	}
+	public function __toString(){
+		foreach($this->txt as $v){
+			$rt.= ( (strlen($v) < $this->maxLen)?"":"\n" . str_repeat("\t",$this->tab ) )
+				.$v;
+		}		
+		return  $rt ;
+	}
+}

@@ -243,6 +243,7 @@ class EntidadBase extends ExtensionPuente{
 			// echo "entrando $posicion";
 			// primera vuelta verificar estado y comenzar.
 			$sql= "SELECT * FROM $this->table WHERE `$campo`$relacion'$valor' $extra ;";
+			// echo $sql;
 			$query=$this->query($sql);
 			if (!$query){
 				// falla de consulta.
@@ -614,6 +615,7 @@ class EntidadBase extends ExtensionPuente{
 	public function add(){
 		// agregar un registro nuevo.
 		$t="" ;
+       //var_dump($this);
 		
 		foreach($this->columnas as $campo ) {
 			if ($campo != "id") {
@@ -633,7 +635,7 @@ class EntidadBase extends ExtensionPuente{
 		
         $query="INSERT INTO ".$this->table." (".implode(", ",$this->columnas).")
                 VALUES(NULL, $t );";
-        echo $query;
+        // echo new html("t",['class'=>"hidden",style=>"visible:false;"],"entidad_base:$query");
         $idsave=false;
         $save=$this->query($query);
         if ($save){

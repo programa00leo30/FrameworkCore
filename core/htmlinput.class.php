@@ -7,13 +7,14 @@
 
 class htmlinput {
 
-	private $javascript;
+	private $javascript=array();
 	private $imageKeys = array();
 	public function __construct(){
-		$this->javascript="";
+		$this->javascript=array();
 	}
 	
 	private function getElementHtml($tag, $attributes, $content = false) {
+		/*
 		$code = '<' . $tag;
 		foreach ($attributes as $attribute => $value) {
 			$code .= ' ' . $attribute . '="' . htmlentities(stripslashes($value), ENT_COMPAT) . '"';
@@ -30,8 +31,10 @@ class htmlinput {
 				$code .= '>' ;
 			}
 		}
-
-		return $code;
+		
+		// return $code;
+		*/
+		return new html($tag,$attributes,$content);
 	}
 	
 	
@@ -73,21 +76,25 @@ class htmlinput {
 
 	public function getOptionGroup($options, $currentValue) {
 		$content = '';
+		$opcions=[];
 		foreach ($options as $optionKey => $optionValue) {
 			if (is_array($optionValue)) {
 				$content .= '<optgroup label="' . $optionKey . '">' 
 					. $this->getOptionGroup($optionValue, $currentValue) . '</optgroup>';
+				$options[]=new html("optgroup",[label=>$optionKey],$this->getOotionGroup);
 			} 
 			else {
 				$optionAttributes = array();
 				if ($currentValue == $optionKey) {
 					$optionAttributes['selected'] = 'selected';
 				}
-				$content .= $this->getOptionHtml($optionKey, $optionValue, $optionAttributes);
+				// $content .= $this->getOptionHtml($optionKey, $optionValue, $optionAttributes);
+				$opcions[]= $this->getOptionHtml($optionKey, $optionValue, $optionAttributes);
 			}
 		}
 
-		return $content;
+		// return $content;
+		return $opcions;
 	}
 
 	public function getOptionHtml($value, $content, $attributes = array()) {
@@ -137,14 +144,16 @@ class htmlinput {
 		} else {
 			$escaped = true;
 		}
-
+		/*
 		$code = '<input type="button" value="' . $finalValue 
 			. '" data-output="' . $output . '"' . ($escaped ? ' data-escaped="true"' : '') . ' />';
 		return $code;
+		*/
+		return new html("input",[type=>"button",value=>$finalValue,data-output=>$output,data-escaped=>"true"]);
 	}
 	public function editor($contenido,$id="summernote" ,$extras =""){
 		// WYSIWYG
-		$text="<textarea id=\"$id\" $extras >$contenido</textarea>";
+		/* $text="<textarea id=\"$id\" $extras >$contenido</textarea>";
 		/*$this->javascript .= "$(document).ready(function() {
 		$this->javascript .= "$(document).YellowText(function() {
     $('#$id').$id({
@@ -157,17 +166,20 @@ class htmlinput {
 });
 });" ;
 */
-		$this->javascript .= "\n$(\"#$id\").YellowText();\n" ;
-		return $text;
+		// $this->javascript .= "\n$(\"#$id\").YellowText();\n" ;
+		// return $text;
+		$this->javascript[]= new html("script",[],"\n$(\"#$id\").YellowText();\n") ;
+		return new html("textarea",[id=>$id],$contenido,$extras);
 	}
 	public function javascript($texto,$archivo=""){
 		if ($archivo!=""){
 			/* <script src="<?php echo $helper->url("js","yellow-text.js" ) ?>" ></script> */
-			$texto="<script src=\"".$archivo."\" >$texto</script>";
+			$texto=new html("script",[src=>$archivo],$texto);//"<script src=\"".$archivo."\" >$texto</script>";
 		}else{
-			$texto="<script>$texto</script>";
+			$texto=new html("script",[],$texto);
+			//$texto="<script>$texto</script>";
 		}
-		$this->javascript .=$texto;
+		$this->javascript[] =$texto;
 	}
 	public function javascript_Render(){
 
