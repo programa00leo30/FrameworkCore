@@ -158,3 +158,4 @@ function vardump($variable){
 	debugf("var_dump::".$sal);
 }
 
+if (! function_exists("utf8_encode") ) function utf8_encode($texto){return $texto} ;
