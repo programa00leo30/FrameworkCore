@@ -167,7 +167,7 @@ class EntidadBase extends ExtensionPuente{
 		if (in_array($campo,$this->columnas)){
 			// el campo existe:
 			$atr = $this->atributos[$campo] ;
-			$extra="";
+			$extra=nz($this->atributos[$campo]["extras"],[]);
 			if (!isset($valor)){
 				if ($this->$campo != "NULL" ){
 				// $valor = ( $this->$campo != "NULL" )?$this->$campo:"";
@@ -179,6 +179,9 @@ class EntidadBase extends ExtensionPuente{
 						if ( $this->atributos[$campo]["dbdefault"] == "timestamp" ){
 							// fecha / hora 
 							$valor = date("Y-m-d H:i:s") ;
+						}elseif ( $this->atributos[$campo]["dbdefault"] == "date" ){
+							$valor = date("Y-m-d") ;
+							
 						}else{
 							
 							$valor = $this->atributos[$campo]["dbdefault"] ;
@@ -192,7 +195,7 @@ class EntidadBase extends ExtensionPuente{
 			}
 				
 			if ($atr["dbtipo"] == "not null"){
-				$extra = "required=\"required\"" ;
+				$extra["required"]="required" ;
 			}
 			$placeholder = isset($atr["comenta"])?$atr["comenta"]:$campo ;
 			$label=isset($atr["label"])?$atr["label"]:$placeholder;

@@ -2,7 +2,7 @@
 
 class ControladorBase{
 	private $plantilla;
-	private $enventana = false ;
+	protected $enventana = false ;
 	private $ajax = false ;
 	protected $modelo;
 	public static $sesion ;
