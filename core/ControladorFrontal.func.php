@@ -11,19 +11,25 @@ function cargarControladorSeguro($controller){
 		$controlador=ucwords($controller).'Controller';
 		$modelo->setAccion("controller");
 		$strFileController=$modelo->runing( ucwords(CONTROLADOR_DEFECTO).'Controller.php');
+		$f=$modelo->runing( ucwords($controller).'Controller.php' );
+		//if ($modelo->falla() == 0) {
+		{
+			
+			$rt=require_once($f);
+			if (!$rt){
+				// no existe el controlador, cargando el que es por defecto.
+				
+				$strFileController=ucwords(CONTROLADOR_DEFECTO).'Controller.php';
+				$rt=require_once($modelo->runing( ucwords(CONTROLADOR_DEFECTO).'Controller.php' ));
+				$controlador=ucwords(CONTROLADOR_DEFECTO).'Controller';
 
-		$rt=require_once($modelo->runing( ucwords($controller).'Controller.php' ));
-		if (!$rt){
-			// no existe el controlador, cargando el que es por defecto.
-			$strFileController=ucwords(CONTROLADOR_DEFECTO).'Controller.php';
-			$rt=require_once($modelo->runing( ucwords(CONTROLADOR_DEFECTO).'Controller.php' ));
-			$controlador=ucwords(CONTROLADOR_DEFECTO).'Controller';
-
+			}
 		}
+		
 		if (class_exists ( $controlador )){ // la clase existe.
 			$controllerObj=new $controlador();
 		}else{ // la clase no existe. cargando controlador por defecto.
-			$controlador = (ucwords(CONTROLADOR_DEFECTO).'Controller');
+			$controlador = $modelo->runing(ucwords(CONTROLADOR_DEFECTO).'Controller.php');
 			$controllerObj=new $controlador();
 		}
 
@@ -149,6 +155,7 @@ ENC
 		}
 	}
 }
+
 function vardump($variable){
 	// generar un var_dump para alguna variable.
 	ob_start();

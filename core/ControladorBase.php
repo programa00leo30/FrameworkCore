@@ -153,8 +153,10 @@ class ControladorBase{
 		return $pagina->render();
 	}
 	public function view($vista,$datos,$plantillaTrue=true){
+		
 		$plantilla = array( "" , $this->plantilla )[$plantillaTrue ];
 		$this->_view($vista,$datos,$plantilla);
+		
 	}
 
     public function plantilla($plantilla){

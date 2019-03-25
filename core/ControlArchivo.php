@@ -51,15 +51,16 @@ class ControlArchivo{
 		//obtenemos el path usado..
 		if ($path==""){
 			// utilizamos variable constante pre definida.
-			$this->arreglo = explode("/",PATH);
+			$this->arreglo = explode(DIRECTORY_SEPARATOR,PATH);
 		}else{
 			// utilizamos el valor pasado como parametro.
-			$this->arreglo = explode("/",$path);
+			$this->arreglo = explode(DIRECTORY_SEPARATOR,$path);
 			// $this->arreglo = explode("/",pathinfo( __file__, PATHINFO_DIRNAME));
 		}
 		$count = count($this->arreglo);
 		DebugerCore::log("controlArchivo:", "path:$path:\n");
 		self::$modelo = array_pop($this->arreglo);
+		// echo "modelo:". self::$modelo  ." <br>\n";
 		self::$perfil = array_pop($this->arreglo);
 		self::$ruta = implode(DIRECTORY_SEPARATOR,$this->arreglo);
 	}
@@ -73,8 +74,8 @@ class ControlArchivo{
 	public function RequireOnce($archivo,$default){
 		// retorna la ruta y archivo esperado.
 		$ruta=self::$ruta.DIRECTORY_SEPARATOR .self::$perfil.DIRECTORY_SEPARATOR ;
-
-		$t= $ruta .self::$modelo.DIRECTORY_SEPARATOR .self::$accion .DIRECTORY_SEPARATOR.$archivo; // si existe ok.
+		
+		$t= $ruta .self::$modelo .DIRECTORY_SEPARATOR .self::$accion .DIRECTORY_SEPARATOR.$archivo; // si existe ok.
 		$d= $ruta ."default"	.DIRECTORY_SEPARATOR .self::$accion .DIRECTORY_SEPARATOR.$archivo; // si no existe en el modelo.
 		$f= $ruta ."default"	.DIRECTORY_SEPARATOR ."404"			.DIRECTORY_SEPARATOR.$default; // si no esta en default.
 

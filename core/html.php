@@ -66,14 +66,18 @@ class html implements Iterator {
 		 se requiere cierre de etiqueta.
 		*/
 		$this->noCerrar=true;
+		return $this;
 		
 	}
+	
 	public function GetTab(){return $this->tab; }
 	
 	public function SetAtr($key,$val){
 		// remplazar / cambiar atributo
 		$this->atributos[$key]=$val;
+		return $this;
 	}
+	
 	public function GetById($id){
 		$r=$this->GetAtr("id");
 		if ($r){
@@ -93,7 +97,8 @@ class html implements Iterator {
 					}
 				}
 			}
-		}else{
+		}else
+		{
 			if (is_array($this->contenido)){
 				foreach ($this->contenido as $o)
 					if ($o instanceof html){
@@ -118,6 +123,7 @@ class html implements Iterator {
 
 	public function SetContent($content){
 		$this->contenido = $content;
+		return $this;
 	}
 	public function AddContent($content){
 		$this->contenido .= $content;

@@ -44,6 +44,43 @@ class PaginaBase{
 		*/
 		return $this->entrada("plantilla",$archivo);//$this->pagina["archivo"]);
 	}
+	public function htmlObjectContenido(){
+		return $this->HTMLentrada( "view",$this->pagina["contenido"],$this->pagina["datos"] );
+	}
+	public function htmlObject($PaginaACargar,$plantilla="plantilla"){
+		return $this->HTMLentrada($plantilla,$PaginaACargar,$this->pagina["datos"]);
+	
+	}
+	
+	private function HTMLentrada($actuador,$archivo,$arreglo=array()){
+
+		$pagina=$this;
+		$helper = $this->pagina["ayuda"];
+		$html = $this->pagina["html"];
+
+		foreach ($arreglo as $id_assoc => $valor) {
+            ${$id_assoc}=$valor;
+            //echo "pasando:$id_assoc == $valor<br>\n";
+        }
+
+		// echo "PaginaBase:archivo:$archivo actuador:$actuador<br>\n";
+		$this->modelo->setAccion($actuador);
+		// $file=$this->modelo->runing($this->pagina["archivo"]);
+		$file=$this->modelo->runing($archivo);
+		DebugerCore::log("pagina_file::",  
+			( array(".:OK:.",".:DEF:.",".:404($archivo):.")[$this->modelo->falla()] ) 
+			. "$archivo // file:$file" 
+		);
+		ob_start();
+		$rt = require ($file);
+		ob_end_clean();
+		if ($rt instanceof html) return $rt;
+		else {
+			 // contenido texto en puro.
+			 return  new coment("$archivo") ;
+			// return $rt ;
+		}
+	}
 	public function contenido(){
 
         $this->entrada("view",$this->pagina["contenido"],$this->pagina["datos"]);
